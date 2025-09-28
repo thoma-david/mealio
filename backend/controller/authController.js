@@ -1,7 +1,28 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import Profile from "../models/profile.model.js";
 import transporter from "../config/nodemailer.js";
+import Recipe from "../models/recipe.model.js";
+
+
+export const verifyAuth = (req, res) => {
+  const user = req.user;
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  // You can return selected fields if needed
+  res.status(200).json({
+    success: true,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    },
+  });
+};
 
 export const register = async (req, res) => {
   console.log("Register function called");
@@ -123,4 +144,148 @@ export const sendVerificationEmail = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+};
+
+export const createProfile = async (req, res) => {
+      try{
+          const userId = req.user._id;
+
+          const existing = await Profile.findOne({ user: userId });
+          if (existing) {
+              return res.status(400).json({ success: false, message: "Profile already exists for this user" });
+          }
+
+          const newProfile = new Profile({
+              user: userId,
+              age: req.body.age,
+              gender: req.body.gender,
+              height: req.body.height,
+              weight: req.body.weight,
+              budget: req.body.budget,
+              allergies: req.body.allergies,
+              conditions: req.body.conditions,
+              activityLevel: req.body.activityLevel,
+              stressLevel: req.body.stressLevel,
+              dietType: req.body.dietType,
+              dislikes: req.body.dislikes,
+              likes: req.body.likes,
+              goal: req.body.goal,
+          });
+
+          await newProfile.save();
+          res.status(201).json({ success: true, message: "Profile created successfully" });
+      }catch(error){
+          res.status(500).json({ success: false, message: error.message });
+      }
+
+}
+
+export const updateProfile = async (req, res) => {
+    try{
+        const userId = req.user._id;
+        const updatedProfile = await Profile.findOneAndUpdate({ user: userId }, req.body, { new: true });
+        res.status(200).json({ success: true, message: "Profile updated successfully", data: updatedProfile });
+    }catch (error){
+          res.status(500).json({ success: false, message: error.message });
+      }}
+
+
+
+export const addRecipe = async (req, res) => {
+    try {
+        const { name, time, ingredients, steps, protein, calories, fat, carbohydrates, estimated_price, meal_type,allergens, tags } = req.body;
+
+        const newRecipe = new Recipe({
+            name,
+            time,
+            ingredients,
+            steps,
+            protein,
+            calories,
+            fat,
+            carbohydrates,
+            estimated_price,
+            meal_type,
+            allergens,
+            tags
+        });
+
+        await newRecipe.save();
+        res.status(201).json({ success: true, message: "Recipe added successfully", data: newRecipe });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Like a recipe
+export const likeRecipe = async (req, res) => {
+    try {
+        const { recipeId } = req.body;
+        const userId = req.user._id; // User ID aus authMiddleware
+
+        const profile = await Profile.findOne({ user: userId });
+        if (!profile) {
+            return res.status(404).json({ success: false, message: "Profile not found" });
+        }
+
+        // Remove from dislikes if it's there
+        profile.dislikes = profile.dislikes.filter(id => !id.equals(recipeId));
+        
+        // Add to likes if not already there
+        if (!profile.likes.includes(recipeId)) {
+            profile.likes.push(recipeId);
+        }
+
+        await profile.save();
+        res.status(200).json({ success: true, message: "Recipe liked successfully", data: profile });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Dislike a recipe
+export const dislikeRecipe = async (req, res) => {
+    try {
+        const { recipeId } = req.body;
+        const userId = req.user._id; // User ID aus authMiddleware
+
+        const profile = await Profile.findOne({ user: userId });
+        if (!profile) {
+            return res.status(404).json({ success: false, message: "Profile not found" });
+        }
+
+        // Remove from likes if it's there
+        profile.likes = profile.likes.filter(id => !id.equals(recipeId));
+        
+        // Add to dislikes if not already there
+        if (!profile.dislikes.includes(recipeId)) {
+            profile.dislikes.push(recipeId);
+        }
+
+        await profile.save();
+        res.status(200).json({ success: true, message: "Recipe disliked successfully", data: profile });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Remove like/dislike (neutral)
+export const removeRecipePreference = async (req, res) => {
+    try {
+        const { userId, recipeId } = req.body;
+
+        const profile = await Profile.findOne({ user: userId });
+        if (!profile) {
+            return res.status(404).json({ success: false, message: "Profile not found" });
+        }
+
+        // Remove from both arrays
+        profile.likes = profile.likes.filter(id => !id.equals(recipeId));
+        profile.dislikes = profile.dislikes.filter(id => !id.equals(recipeId));
+
+        await profile.save();
+        res.status(200).json({ success: true, message: "Recipe preference removed", data: profile });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 };
