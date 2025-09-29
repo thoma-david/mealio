@@ -1,12 +1,196 @@
 import React from "react";
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  IconButton, 
+  Box, 
+  Paper,
+  Container,
+  useScrollTrigger,
+  Slide
+} from "@mui/material";
+import { Menu, AccountCircle, Home, Explore, FavoriteRounded, CalendarToday } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
+import { useLocation, useNavigate } from "react-router-dom";
+
+interface HideOnScrollProps {
+  children: React.ReactElement;
+}
+
+function HideOnScroll({ children }: HideOnScrollProps) {
+  const trigger = useScrollTrigger();
+  
+  return (
+    <Slide appear={false} direction="down" in={!trigger}>
+      {children}
+    </Slide>
+  );
+}
 
 const Navbar = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const navigationItems = [
+    { icon: <Home />, label: 'Home', path: '/' },
+    { icon: <Explore />, label: 'Explore', path: '/explore' },
+    { icon: <CalendarToday />, label: 'Week', path: '/week' },
+    { icon: <FavoriteRounded />, label: 'Favorites', path: '/favorites' },
+  ];
+
+  const currentPath = location.pathname;
+
   return (
-    <div className="flex justify-between max-w-[500px] bg-gray-200 m-5 rounded-full">
-      <button className="rounded-full bg-blue-300 w-[40px] h-[40px]">+</button>
-      <h2 className="my-2">Meal.io</h2>
-      <button className="rounded-full bg-blue-300 w-[40px] h-[40px]">+</button>
-    </div>
+    <>
+      {/* Top App Bar */}
+      <HideOnScroll>
+        <AppBar 
+          position="fixed" 
+          elevation={0}
+          sx={{
+            bgcolor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: `1px solid ${alpha('#000', 0.08)}`,
+            
+          }}
+        >
+          <Container maxWidth="sm" >
+            <Toolbar sx={{ justifyContent: 'space-between', minHeight: '64px !important'}}>
+              <IconButton 
+                edge="start" 
+                sx={{ 
+                  bgcolor: alpha('#ff7043', 0.1),
+                  '&:hover': { bgcolor: alpha('#ff7043', 0.2) }
+                }}
+              >
+                <Menu sx={{ color: '#ff7043' }} />
+              </IconButton>
+              
+              <Typography 
+                variant="h5" 
+                component="h1" 
+                fontWeight="bold"
+                sx={{
+                  background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '-0.02em',
+                  
+                }}
+              >
+                Meal.io
+              </Typography>
+              
+              <IconButton 
+                edge="end"
+                sx={{ 
+                  bgcolor: alpha('#ff7043', 0.1),
+                  '&:hover': { bgcolor: alpha('#ff7043', 0.2) }
+                }}
+              >
+                <AccountCircle sx={{ color: '#ff7043' }} />
+              </IconButton>
+            </Toolbar>
+          </Container>
+        </AppBar>
+      </HideOnScroll>
+
+      {/* Bottom Navigation */}
+      <Paper
+        elevation={8}
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 20,
+          bgcolor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderTop: `1px solid ${alpha('#000', 0.08)}`,
+        }}
+      >
+        <Container maxWidth="sm">
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-around',
+              alignItems: 'center',
+              py: 2,
+              px: 1
+            }}
+          >
+            {navigationItems.map((item, index) => {
+              const isActive = currentPath === item.path;
+              
+              return (
+                <Box
+                  key={index}
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    py: 1,
+                    px: 2,
+                    borderRadius: 2,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    '&:hover': {
+                      bgcolor: alpha('#ff7043', 0.08),
+                      transform: 'translateY(-2px)',
+                    }
+                  }}
+                >
+                  <IconButton
+                    size="small"
+                    sx={{
+                      mb: 0.5,
+                      color: isActive ? '#ff7043' : alpha('#000', 0.6),
+                      bgcolor: isActive ? alpha('#ff7043', 0.15) : 'transparent',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                    }}
+                  >
+                    {item.icon}
+                  </IconButton>
+                  
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: isActive ? '#ff7043' : alpha('#000', 0.6),
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: '0.75rem',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                  >
+                    {item.label}
+                  </Typography>
+
+                  {/* Active indicator */}
+                  {isActive && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: -2,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 4,
+                        height: 4,
+                        bgcolor: '#ff7043',
+                        borderRadius: '50%',
+                      }}
+                    />
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        </Container>
+      </Paper>
+    </>
   );
 };
 
