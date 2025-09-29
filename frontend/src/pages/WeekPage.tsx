@@ -375,24 +375,7 @@ const WeekPage = () => {
           </Paper>
         )}
 
-        {/* Week Calendar Placeholder */}
-        <Paper
-          elevation={0}
-          sx={{
-            height: 120,
-            borderRadius: 3,
-            background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
-            border: `1px solid ${alpha('#2196f3', 0.2)}`,
-            mb: 3,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <Typography variant="body1" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-            Week Calendar View
-          </Typography>
-        </Paper>
+        
 
         {/* Day Filter Chips */}
         <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1, mb: 3 }}>
