@@ -1,30 +1,44 @@
-import LoginPage from './pages/LoginPage'
-import Dashboard from './pages/Dashboard'
-import './App.css'
+import LoginPage from "./pages/LoginPage";
+import Dashboard from "./pages/Dashboard";
+import "./App.css";
 
-import PublicRoute from './routes/publicRoutes'
-import ProtectedRoute from './routes/protectedRoutes'
+import PublicRoute from "./routes/publicRoutes";
+import ProtectedRoute from "./routes/protectedRoutes";
 
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import ExplorePage from "./pages/ExplorePage";
 function App() {
-
-    const router = createBrowserRouter([
-      {
-        path: "/login",
-        element: <PublicRoute><LoginPage /></PublicRoute>
-      },
-      {
-        path: "/",
-        element: <ProtectedRoute><Dashboard /></ProtectedRoute>
-      }
-    ])
+  const router = createBrowserRouter([
+    {
+      path: "/login",
+      element: (
+        <PublicRoute>
+          <LoginPage />
+        </PublicRoute>
+      ),
+    },
+    {
+      path: "/",
+      element: (
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/explore",
+      element: (
+        <ProtectedRoute>
+          <ExplorePage />
+        </ProtectedRoute>
+      ),
+    },
+  ]);
   return (
     <>
-
       <RouterProvider router={router} />
-    
     </>
-  )
+  );
 }
 
-export default App
+export default App;
