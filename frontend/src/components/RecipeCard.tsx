@@ -81,7 +81,7 @@ export default function RecipeCard({
         }
       } else {
         // Add to favorites
-        const response = await fetch("http://localhost:5000/api/auth/like-recipe", {
+        const response = await fetch(`${API_URL}/like-recipe`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

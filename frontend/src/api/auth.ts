@@ -7,7 +7,7 @@ export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   isUser: async () => {
     console.log("API_URL is set to:", API_URL);
     try {
-      const res = await fetch(`${API_URL}/api/auth/verify`, {
+      const res = await fetch(`${API_URL}/verify`, {
         method: "GET",
         credentials: "include",
       });
@@ -25,9 +25,9 @@ export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 
 export const login = async (email: string, password: string) => {
-  const res = await fetch(`${API_URL}/api/auth/login`, {
+  const res = await fetch(`${API_URL}/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "/json" },
     credentials: "include",
     body: JSON.stringify({ email, password }),
   });
@@ -37,7 +37,7 @@ export const login = async (email: string, password: string) => {
 
 
 export const logout = async () => {
-  const res = await fetch(`${API_URL}/api/auth/logout`, {
+  const res = await fetch(`${API_URL}/logout`, {
     method: "POST",
     credentials: "include",
   });
