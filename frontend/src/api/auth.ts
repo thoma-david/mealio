@@ -1,0 +1,43 @@
+
+const API_URL = "http://localhost:5000/api/auth";
+
+ export const auth = {
+  isUser: async () => {
+    try {
+      const res = await fetch(`${API_URL}/verify`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) return false;
+
+      const data = await res.json();
+      return data.success;
+    } catch (error) {
+      console.error("Error verifying user:", error);
+      return false;
+    }
+  },
+};
+
+
+export const login = async (email: string, password: string) => {
+  const res = await fetch(`${API_URL}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, password }),
+  });
+
+  return await res.json();
+};
+
+
+export const logout = async () => {
+  const res = await fetch(`${API_URL}/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  return await res.json();
+};
