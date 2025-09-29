@@ -3,8 +3,7 @@ import { useState } from "react";
 import React from "react";
 import SingleRecipe from "../components/SingleRecipe";
 import { motion, AnimatePresence } from "framer-motion";
-import { API_URL } from "../api/auth";
-import { Search, Filter, TrendingUp } from "lucide-react";
+import { Search, Filter, Heart } from "lucide-react";
 import { 
   TextField, 
   InputAdornment, 
@@ -27,6 +26,7 @@ import {
   Divider
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { API_URL } from "../api/auth";
 
 type Ingredient = {
   name: string;
@@ -51,7 +51,7 @@ type Recipe = {
   ingredients: Ingredient[];
 };
 
-const ExplorePage = () => {
+const FavoritesPage = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -68,10 +68,10 @@ const ExplorePage = () => {
   const [availableMealTypes, setAvailableMealTypes] = useState<string[]>([]);
 
   React.useEffect(() => {
-    const fetchRecipes = async () => {
+    const fetchFavoriteRecipes = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_URL}/recipes`, {
+        const response = await fetch(`${API_URL}/favorites`, {
           method: "GET",
           credentials: "include",
         });
@@ -93,14 +93,14 @@ const ExplorePage = () => {
         const uniqueMealTypes = [...new Set(allMealTypes)] as string[];
         setAvailableMealTypes(uniqueMealTypes);
       } catch (error) {
-        console.error("Error fetching recipes:", error);
+        console.error("Error fetching favorite recipes:", error);
         setRecipes([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRecipes();
+    fetchFavoriteRecipes();
   }, []);
 
   const variants = {
@@ -202,21 +202,21 @@ const ExplorePage = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
           <Box>
             <Typography variant="h3" component="h1" fontWeight="bold" color="text.primary">
-              Explore
+              Favorites
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
-              Discover amazing recipes
+              Your saved recipes
             </Typography>
           </Box>
           <Paper 
             elevation={0}
             sx={{ 
-              bgcolor: alpha('#ff7043', 0.1), 
+              bgcolor: alpha('#e91e63', 0.1), 
               p: 1.5, 
               borderRadius: 2 
             }}
           >
-            <TrendingUp size={24} style={{ color: '#ff7043' }} />
+            <Heart size={24} style={{ color: '#e91e63' }} />
           </Paper>
         </Box>
 
@@ -224,7 +224,7 @@ const ExplorePage = () => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Search recipes..."
+          placeholder="Search favorite recipes..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{
@@ -236,10 +236,10 @@ const ExplorePage = () => {
                 borderColor: alpha('#000', 0.1),
               },
               '&:hover fieldset': {
-                borderColor: alpha('#ff7043', 0.3),
+                borderColor: alpha('#e91e63', 0.3),
               },
               '&.Mui-focused fieldset': {
-                borderColor: '#ff7043',
+                borderColor: '#e91e63',
                 borderWidth: 2,
               },
             },
@@ -257,10 +257,10 @@ const ExplorePage = () => {
                   size="small"
                   onClick={() => setFilterOpen(true)}
                   sx={{
-                    color: hasActiveFilters ? '#ff7043' : alpha('#000', 0.4),
-                    bgcolor: hasActiveFilters ? alpha('#ff7043', 0.1) : 'transparent',
+                    color: hasActiveFilters ? '#e91e63' : alpha('#000', 0.4),
+                    bgcolor: hasActiveFilters ? alpha('#e91e63', 0.1) : 'transparent',
                     '&:hover': {
-                      bgcolor: alpha('#ff7043', 0.1)
+                      bgcolor: alpha('#e91e63', 0.1)
                     }
                   }}
                 >
@@ -274,17 +274,19 @@ const ExplorePage = () => {
         {/* Stats */}
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
           <Typography variant="body2" color="text.secondary">
-            {filteredRecipes.length} recipes found
+            {filteredRecipes.length} favorite recipes
           </Typography>
-          <Chip 
-            label="Popular today" 
-            size="small" 
-            sx={{ 
-              bgcolor: alpha('#ff7043', 0.1),
-              color: '#ff7043',
-              fontWeight: 500
-            }} 
-          />
+          {recipes.length > 0 && (
+            <Chip 
+              label="❤️ Loved" 
+              size="small" 
+              sx={{ 
+                bgcolor: alpha('#e91e63', 0.1),
+                color: '#e91e63',
+                fontWeight: 500
+              }} 
+            />
+          )}
         </Box>
       </Container>
 
@@ -296,12 +298,12 @@ const ExplorePage = () => {
               <CircularProgress 
                 size={48} 
                 sx={{ 
-                  color: '#ff7043',
+                  color: '#e91e63',
                   mb: 3
                 }} 
               />
               <Typography variant="h6" fontWeight="medium" color="text.primary" gutterBottom>
-                Loading delicious recipes
+                Loading your favorites
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 This won't take long...
@@ -328,7 +330,7 @@ const ExplorePage = () => {
                       '&:hover': {
                         transform: 'translateY(-4px)',
                         boxShadow: `0 12px 24px ${alpha('#000', 0.15)}`,
-                        borderColor: alpha('#ff7043', 0.2),
+                        borderColor: alpha('#e91e63', 0.2),
                       }
                     }}
                   >
@@ -355,18 +357,18 @@ const ExplorePage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: alpha('#000', 0.04),
+                  bgcolor: alpha('#e91e63', 0.1),
                   mx: 'auto',
                   mb: 2
                 }}
               >
-                <Search size={32} style={{ color: alpha('#000', 0.4) }} />
+                <Heart size={32} style={{ color: '#e91e63' }} />
               </Paper>
               <Typography variant="h6" fontWeight="medium" color="text.primary" gutterBottom>
-                No recipes found
+                No favorite recipes yet
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Try adjusting your search terms
+                Start exploring recipes and add them to your favorites!
               </Typography>
             </Box>
           )}
@@ -386,13 +388,13 @@ const ExplorePage = () => {
         <DialogTitle sx={{ pb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="h6" fontWeight="bold">
-              Filter Recipes
+              Filter Favorites
             </Typography>
             {hasActiveFilters && (
               <Button 
                 onClick={clearFilters}
                 size="small"
-                sx={{ color: '#ff7043' }}
+                sx={{ color: '#e91e63' }}
               >
                 Clear All
               </Button>
@@ -414,15 +416,15 @@ const ExplorePage = () => {
               max={50}
               step={1}
               sx={{
-                color: '#ff7043',
+                color: '#e91e63',
                 '& .MuiSlider-thumb': {
-                  bgcolor: '#ff7043',
+                  bgcolor: '#e91e63',
                 },
                 '& .MuiSlider-track': {
-                  bgcolor: '#ff7043',
+                  bgcolor: '#e91e63',
                 },
                 '& .MuiSlider-rail': {
-                  bgcolor: alpha('#ff7043', 0.2),
+                  bgcolor: alpha('#e91e63', 0.2),
                 }
               }}
             />
@@ -520,9 +522,9 @@ const ExplorePage = () => {
                         onChange={() => handleMealTypeToggle(mealType)}
                         size="small"
                         sx={{
-                          color: alpha('#ff7043', 0.6),
+                          color: alpha('#e91e63', 0.6),
                           '&.Mui-checked': {
-                            color: '#ff7043',
+                            color: '#e91e63',
                           },
                         }}
                       />
@@ -533,9 +535,9 @@ const ExplorePage = () => {
                         size="small"
                         variant={selectedMealTypes.includes(mealType) ? 'filled' : 'outlined'}
                         sx={{
-                          bgcolor: selectedMealTypes.includes(mealType) ? '#ff7043' : 'transparent',
-                          color: selectedMealTypes.includes(mealType) ? 'white' : '#ff7043',
-                          borderColor: '#ff7043',
+                          bgcolor: selectedMealTypes.includes(mealType) ? '#e91e63' : 'transparent',
+                          color: selectedMealTypes.includes(mealType) ? 'white' : '#e91e63',
+                          borderColor: '#e91e63',
                           ml: 0.5
                         }}
                       />
@@ -567,8 +569,8 @@ const ExplorePage = () => {
             onClick={() => setFilterOpen(false)}
             variant="contained"
             sx={{ 
-              bgcolor: '#ff7043',
-              '&:hover': { bgcolor: '#ff5722' },
+              bgcolor: '#e91e63',
+              '&:hover': { bgcolor: '#c2185b' },
               ml: 2
             }}
           >
@@ -663,4 +665,4 @@ const ExplorePage = () => {
   );
 };
 
-export default ExplorePage;
+export default FavoritesPage;

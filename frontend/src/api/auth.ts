@@ -1,8 +1,11 @@
 
-const API_URL = "http://localhost:5000/api/auth";
+export const API_URL = `${import.meta.env.VITE_API_URL}/api/auth`;
+
+
 
  export const auth = {
   isUser: async () => {
+    console.log("API_URL is set to:", API_URL);
     try {
       const res = await fetch(`${API_URL}/verify`, {
         method: "GET",

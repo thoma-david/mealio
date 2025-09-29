@@ -26,7 +26,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <Navbar />
-      {children}
+      <div className="my-20 bg-blue-200">
+        {children}
+      </div>
+      
     </>
   );
 };

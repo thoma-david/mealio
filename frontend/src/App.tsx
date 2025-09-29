@@ -1,12 +1,14 @@
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
+import WeekPage from "./pages/WeekPage";
+import ExplorePage from "./pages/ExplorePage";
+import FavoritesPage from "./pages/FavoritesPage";
 import "./App.css";
 
 import PublicRoute from "./routes/publicRoutes";
 import ProtectedRoute from "./routes/protectedRoutes";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ExplorePage from "./pages/ExplorePage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -30,6 +32,22 @@ function App() {
       element: (
         <ProtectedRoute>
           <ExplorePage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/favorites",
+      element: (
+        <ProtectedRoute>
+          <FavoritesPage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/week",
+      element: (
+        <ProtectedRoute>
+          <WeekPage />
         </ProtectedRoute>
       ),
     },
