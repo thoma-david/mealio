@@ -16,7 +16,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   'http://localhost:5173', 
   'https://mealio-frontend.onrender.com',
-  "https://frontend-t9mh.onrender.com/"
+  "https://frontend-t9mh.onrender.com"
 ];
 app.use(cors({
   origin: function (origin, callback) {
