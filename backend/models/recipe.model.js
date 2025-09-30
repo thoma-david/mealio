@@ -5,19 +5,33 @@ const recipeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  time: {
-    type: Number,
-    required: true,
-  },
-  ingredients: [{
+
+  description: {
     type: String,
     required: true,
-  }],
-  steps: {
-    type: Map,
-    of: String,
+  },
+  image: {
+    type: String,
     required: true,
   },
+   ingredients: [
+    {
+      name: {
+        type: String,
+        required: true,
+      },
+      amount: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
+  steps: [
+    {
+      type: String,
+      required: true,
+    }
+  ],
   protein: {
     type: Number,
     required: true,
@@ -38,18 +52,26 @@ const recipeSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  time: {
+    type: Number,
+    required: true,
+  },
   meal_type: {
     type: String,
     required: true,
   },
-  allergens: [{
-    type: String,
-    default: [],
-  }],
-  tags: [{
-    type: String,
-    default: [],
-  }],
+  allergens: [
+    {
+      type: String,
+      default: [],
+    },
+  ],
+  tags: [
+    {
+      type: String,
+      default: [],
+    },
+  ],
 });
 
 const Recipe = mongoose.models.Recipe || mongoose.model("Recipe", recipeSchema);
