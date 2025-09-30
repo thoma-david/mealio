@@ -53,7 +53,7 @@ export const register = async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: process.env.NODE_ENV === "production" ? "None" : "lax",
       maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
     });
@@ -97,7 +97,7 @@ export const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" });
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: process.env.NODE_ENV === "production" ? "None" : "lax",
       maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
     });
@@ -112,7 +112,7 @@ export const logout = (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: process.env.NODE_ENV === "production" ? "None" : "lax",
     });
     res.status(200).json({ success: true, message: "Logged out successfully" });
