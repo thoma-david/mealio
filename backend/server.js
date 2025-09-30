@@ -15,14 +15,18 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   'http://localhost:5173', 
-  'https://mealio-frontend.onrender.com',
+  'http://localhost:5174', 
   "https://frontend-t9mh.onrender.com"
 ];
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (mobile apps, curl, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('Blocked origin:', origin);
       callback(new Error('Not Trusted Origin: ' + origin));
     }
   },
