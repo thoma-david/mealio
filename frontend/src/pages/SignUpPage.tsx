@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { login, signup } from "../api/auth";
+import { signup } from "../api/auth";
 import {
   Box,
   Card,
