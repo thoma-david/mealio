@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { auth, login as apiLogin, logout as apiLogout } from '../api/auth';
+import { useState, useEffect } from "react";
+import { auth, login as apiLogin, logout as apiLogout } from "../api/auth";
 
 interface User {
   id: string;
@@ -10,23 +10,29 @@ interface User {
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   const checkAuth = async () => {
     try {
       setLoading(true);
-      const authenticated = await auth.isUser();
+      const response = await auth.isUser();
+      const authenticated = response.success;
       setIsAuthenticated(authenticated);
-      
-      // Wenn authentifiziert, hole User-Daten
+
       if (authenticated) {
-        // TODO: API Call um User-Daten zu holen
-        // setUser(userData);
+        setHasProfile(response.hasProfile || false);
+        if (response.user) {
+          setUser(response.user);
+        }
+      } else {
+        setHasProfile(false);
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error("Auth check failed:", error);
       setIsAuthenticated(false);
       setUser(null);
+      setHasProfile(false);
     } finally {
       setLoading(false);
     }
@@ -35,17 +41,17 @@ export const useAuth = () => {
   const login = async (email: string, password: string) => {
     try {
       const result = await apiLogin(email, password);
-      
+
       if (result.success) {
         setIsAuthenticated(true);
         // TODO: setUser(result.user); wenn Backend User-Daten zurückgibt
         await checkAuth(); // Refresh auth state
       }
-      
+
       return result;
     } catch (error) {
-      console.error('Login failed:', error);
-      return { success: false, message: 'Network error. Please try again.' };
+      console.error("Login failed:", error);
+      return { success: false, message: "Network error. Please try again." };
     }
   };
 
@@ -53,10 +59,11 @@ export const useAuth = () => {
     try {
       await apiLogout();
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     } finally {
       setIsAuthenticated(false);
       setUser(null);
+      setHasProfile(false);
     }
   };
 
@@ -67,9 +74,10 @@ export const useAuth = () => {
   return {
     isAuthenticated,
     user,
+    hasProfile,
     loading,
     login,
     logout,
-    checkAuth
+    checkAuth,
   };
 };

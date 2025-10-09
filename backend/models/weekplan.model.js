@@ -1,33 +1,55 @@
 import mongoose from "mongoose";
 
-const weekPlanSchema = new mongoose.Schema({
-  user: {
+const mealEntrySchema = new mongoose.Schema({
+  recipe: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "Recipe",
     required: true,
-    unique: true, 
   },
-  weekPlan: {
-    type: Map, 
-    of: {
-      breakfast: {
-        id: { type: mongoose.Schema.Types.ObjectId, ref: "Recipe" },
-        reason: String,
-      },
-      lunch: {
-        id: { type: mongoose.Schema.Types.ObjectId, ref: "Recipe" },
-        reason: String,
-      },
-      dinner: {
-        id: { type: mongoose.Schema.Types.ObjectId, ref: "Recipe" },
-        reason: String,
-      },
-      snack: {
-        id: { type: mongoose.Schema.Types.ObjectId, ref: "Recipe" },
-        reason: String,
-      },
+  servings: {
+    type: Number,
+    required: true,
+    default: 1, // Wie viele Portionen an diesem Tag gegessen werden
+  },
+  cookedOn: {
+    type: String, // z. B. 'monday' – für Nachverfolgbarkeit bei Leftovers
+    required: true,
+  },
+  isPrepared: {
+    type: Boolean, // true = aufgewärmt, false = frisch gekocht
+    required: true,
+  },
+  reason: {
+    type: String, // z. B. "proteinreich", "Budgetfreundlich", etc.
+  },
+});
+
+const daySchema = new mongoose.Schema({
+  breakfast: mealEntrySchema,
+  lunch: mealEntrySchema,
+  dinner: mealEntrySchema,
+  snack: mealEntrySchema,
+});
+
+const weekPlanSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true, // Nur ein Plan pro User
+    },
+    weekPlan: {
+      monday: daySchema,
+      tuesday: daySchema,
+      wednesday: daySchema,
+      thursday: daySchema,
+      friday: daySchema,
+      saturday: daySchema,
+      sunday: daySchema,
     },
   },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 export default mongoose.model("WeekPlan", weekPlanSchema);

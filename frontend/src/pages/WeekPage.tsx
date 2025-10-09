@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { API_URL } from "../api/auth";
 import {
   Box,
@@ -20,8 +20,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
-} from '@mui/material';
+  TextField,
+} from "@mui/material";
 import {
   Refresh,
   ShoppingCart,
@@ -32,30 +32,33 @@ import {
   DinnerDining,
   LocalCafe,
   Settings,
-  Add,
-  Remove
-} from '@mui/icons-material';
-import { alpha } from '@mui/material/styles';
-import { motion, AnimatePresence } from 'framer-motion';
-import RecipeCard from '../components/RecipeCard';
-import SingleRecipe from '../components/SingleRecipe';
+} from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
+import { motion, AnimatePresence } from "framer-motion";
+import RecipeCard from "../components/RecipeCard";
+import SingleRecipe from "../components/SingleRecipe";
 
 type Ingredient = {
-  name: string;
-  amount: string;
+  name?: string; // For grocery list
+  ingredient?: {
+    _id: string;
+    name: string;
+  }; // For populated recipe ingredients
+  amount: string | number;
+  unit?: string;
 };
 
 type Recipe = {
   _id: string;
   name: string;
-  estimated_price: number;
+  estimated_price?: number;
   description: string;
   time: number;
   image: string;
-  carbohydrates: number;
-  calories: number;
-  protein: number;
-  fat: number;
+  carbohydrates?: number;
+  calories?: number;
+  protein?: number;
+  fat?: number;
   steps: string[];
   tags: string[];
   meal_type: string;
@@ -75,7 +78,6 @@ type MealPlan = {
   week: MealPlanDay[];
   groceryList: Ingredient[];
   metadata?: {
-    peopleCount: number;
     weeklyBudget: number;
     dailyBudget: string;
     generatedAt: string;
@@ -85,31 +87,31 @@ type MealPlan = {
 // Helper function to get meal type icon and color
 const getMealTypeInfo = (mealType?: string) => {
   switch (mealType?.toLowerCase()) {
-    case 'breakfast':
-      return { icon: <WbSunny />, color: '#ffa726', label: 'Breakfast' };
-    case 'lunch':
-      return { icon: <Restaurant />, color: '#4caf50', label: 'Lunch' };
-    case 'dinner':
-      return { icon: <DinnerDining />, color: '#f44336', label: 'Dinner' };
-    case 'snack':
-      return { icon: <LocalCafe />, color: '#9c27b0', label: 'Snack' };
+    case "breakfast":
+      return { icon: <WbSunny />, color: "#ffa726", label: "Breakfast" };
+    case "lunch":
+      return { icon: <Restaurant />, color: "#4caf50", label: "Lunch" };
+    case "dinner":
+      return { icon: <DinnerDining />, color: "#f44336", label: "Dinner" };
+    case "snack":
+      return { icon: <LocalCafe />, color: "#9c27b0", label: "Snack" };
     default:
-      return { icon: <Restaurant />, color: '#ff7043', label: 'Meal' };
+      return { icon: <Restaurant />, color: "#ff7043", label: "Meal" };
   }
 };
 
 const WeekPage = () => {
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedDay, setSelectedDay] = useState('Mon');
+  const [selectedDay, setSelectedDay] = useState("Mon");
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [peopleCount, setPeopleCount] = useState(2);
   const [weeklyBudget, setWeeklyBudget] = useState(100);
+  const [likedRecipes, setLikedRecipes] = useState<Set<string>>(new Set());
 
-  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const generateMealPlan = async () => {
     setLoading(true);
@@ -121,17 +123,33 @@ const WeekPage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          peopleCount: peopleCount, // Send people count for this generation only
-          weeklyBudget: weeklyBudget // Send weekly budget for this generation
+          weeklyBudget: weeklyBudget, // Send weekly budget for this generation
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log("📦 Received meal plan data:", data.data);
+
+        // Log a sample recipe to check structure
+        if (data.data?.week?.[0]?.recipes?.[0]) {
+          const sampleRecipe = data.data.week[0].recipes[0];
+          console.log("🔍 Sample recipe:", {
+            name: sampleRecipe.name,
+            hasIngredients: !!sampleRecipe.ingredients,
+            ingredientsCount: sampleRecipe.ingredients?.length,
+            firstIngredient: sampleRecipe.ingredients?.[0],
+            hasCalories: !!sampleRecipe.calories,
+            calories: sampleRecipe.calories,
+            hasProtein: !!sampleRecipe.protein,
+            protein: sampleRecipe.protein,
+          });
+        }
+
         // Transform the API response to our expected format
         setMealPlan(data.data);
         // Save to localStorage for persistence
-        localStorage.setItem('mealPlan', JSON.stringify(data.data));
+        localStorage.setItem("mealPlan", JSON.stringify(data.data));
       }
     } catch (error) {
       console.error("Error generating meal plan:", error);
@@ -143,37 +161,39 @@ const WeekPage = () => {
   // Load meal plan from localStorage on component mount
   const loadSavedMealPlan = () => {
     try {
-      const saved = localStorage.getItem('mealPlan');
+      const saved = localStorage.getItem("mealPlan");
       if (saved) {
         const parsedMealPlan = JSON.parse(saved);
         setMealPlan(parsedMealPlan);
-        
+
         // Load settings from meal plan metadata if available
         if (parsedMealPlan.metadata) {
-          setPeopleCount(parsedMealPlan.metadata.peopleCount || 2);
           setWeeklyBudget(parsedMealPlan.metadata.weeklyBudget || 100);
         }
       }
     } catch (error) {
       console.error("Error loading saved meal plan:", error);
       // If there's an error, clear the corrupted data
-      localStorage.removeItem('mealPlan');
+      localStorage.removeItem("mealPlan");
     }
   };
 
   // Update user profile with new settings (budget only, not people count)
   const updateProfileSettings = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/auth/update-profile", {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          budget: weeklyBudget // Only save budget to profile
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/auth/update-profile",
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            budget: weeklyBudget, // Only save budget to profile
+          }),
+        }
+      );
 
       if (response.ok) {
         console.log("Profile budget updated successfully");
@@ -186,7 +206,52 @@ const WeekPage = () => {
   useEffect(() => {
     // Load saved meal plan on component mount
     loadSavedMealPlan();
+    // Fetch user's liked recipes
+    fetchLikedRecipes();
   }, []);
+
+  // Fetch user's liked recipes from profile
+  const fetchLikedRecipes = async () => {
+    try {
+      console.log("🔍 Fetching liked recipes...");
+      const response = await fetch(`${API_URL}/favorites`, {
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("📦 Favorites data received:", data);
+
+        if (data.data && Array.isArray(data.data)) {
+          // Extract recipe IDs from the favorite recipes
+          const likesSet = new Set<string>(
+            data.data.map((recipe: any) => recipe._id.toString())
+          );
+          console.log("✅ Liked recipes set:", Array.from(likesSet));
+          setLikedRecipes(likesSet);
+        } else {
+          console.log("⚠️ No favorites found");
+        }
+      } else {
+        console.error("❌ Failed to fetch favorites:", response.status);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching liked recipes:", error);
+    }
+  };
+
+  // Handle like/unlike changes from RecipeCard
+  const handleLikeChange = (recipeId: string, liked: boolean) => {
+    setLikedRecipes((prev) => {
+      const newSet = new Set(prev);
+      if (liked) {
+        newSet.add(recipeId);
+      } else {
+        newSet.delete(recipeId);
+      }
+      return newSet;
+    });
+  };
 
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -199,7 +264,7 @@ const WeekPage = () => {
   };
 
   const toggleGroceryItem = (item: string) => {
-    setCheckedItems(prev => {
+    setCheckedItems((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(item)) {
         newSet.delete(item);
@@ -212,48 +277,34 @@ const WeekPage = () => {
 
   const getCurrentDayRecipes = () => {
     if (!mealPlan) return [];
-    const currentDay = mealPlan.week.find(day => day.day === selectedDay);
+    const currentDay = mealPlan.week.find((day) => day.day === selectedDay);
     return currentDay?.recipes || [];
   };
 
-  // Helper function to calculate adjusted values based on people count
-  const getAdjustedRecipeValues = (recipe: Recipe) => {
-    const currentPeopleCount = peopleCount;
-    return {
-      adjustedPrice: Number((recipe.estimated_price * currentPeopleCount).toFixed(2)),
-      adjustedIngredients: recipe.ingredients?.map(ingredient => ({
-        ...ingredient,
-        amount: `${ingredient.amount} (×${currentPeopleCount})`
-      })) || []
-    };
-  };
-
-  // Helper function to adjust grocery list amounts based on people count
-  const getAdjustedGroceryList = () => {
+  // Helper function to get grocery list as-is (no adjustments)
+  const getGroceryList = () => {
     if (!mealPlan?.groceryList) return [];
-    
-    const currentPeopleCount = peopleCount;
-    
-    return mealPlan.groceryList.map(item => {
-      // Parse the amount to extract numeric value and unit
-      const amountMatch = item.amount.match(/^([\d.]+)\s*(.+)/);
-      let adjustedAmount = item.amount;
-      
-      if (amountMatch) {
-        const baseNumericValue = parseFloat(amountMatch[1]);
-        const unit = amountMatch[2].replace(/\s*\(for.*\)/, ''); // Remove existing "for X people" part
-        
-        // Since recipes are for 1 person by default, multiply by current people count
-        const adjustedValue = (baseNumericValue * currentPeopleCount).toFixed(2).replace(/\.?0+$/, ''); // Remove trailing zeros
-        adjustedAmount = `${adjustedValue} ${unit} (for ${currentPeopleCount} ${currentPeopleCount === 1 ? 'person' : 'people'})`;
+
+    return mealPlan.groceryList.map((item) => {
+      // Get ingredient name - handle both populated and direct formats
+      const ingredientName =
+        item.ingredient?.name || item.name || "Unknown ingredient";
+
+      // Handle both old format (string) and new format (number + unit)
+      let displayAmount = "";
+      if (typeof item.amount === "number") {
+        // New format: amount is a number, unit is separate
+        const amount = item.amount.toFixed(2).replace(/\.?0+$/, ""); // Remove trailing zeros
+        const unit = item.unit || "";
+        displayAmount = `${amount} ${unit}`.trim();
       } else {
-        // If no numeric amount found, just update the people count notation
-        adjustedAmount = item.amount.replace(/\(for \d+ (person|people)\)/, `(for ${currentPeopleCount} ${currentPeopleCount === 1 ? 'person' : 'people'})`);
+        // Old format: amount is already a string
+        displayAmount = item.amount;
       }
-      
+
       return {
-        ...item,
-        amount: adjustedAmount
+        name: ingredientName,
+        amount: displayAmount,
       };
     });
   };
@@ -261,15 +312,14 @@ const WeekPage = () => {
   // Helper function to calculate total cost of all meals
   const getTotalMealCost = () => {
     if (!mealPlan?.week) return 0;
-    
-    const currentPeopleCount = peopleCount;
+
     const totalCost = mealPlan.week.reduce((weekTotal, day) => {
       const dayTotal = day.recipes.reduce((dayTotal, recipe) => {
-        return dayTotal + (recipe.estimated_price * currentPeopleCount);
+        return dayTotal + (recipe.estimated_price || 0);
       }, 0);
       return weekTotal + dayTotal;
     }, 0);
-    
+
     return Number(totalCost.toFixed(2));
   };
 
@@ -281,7 +331,7 @@ const WeekPage = () => {
         type: "spring" as const,
         damping: 30,
         stiffness: 300,
-      }
+      },
     },
     open: {
       y: 0,
@@ -290,50 +340,57 @@ const WeekPage = () => {
         type: "spring" as const,
         damping: 30,
         stiffness: 300,
-      }
+      },
     },
   };
 
   const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
-    exit: { opacity: 0 }
+    exit: { opacity: 0 },
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa', pb: 12 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f8f9fa", pb: 12 }}>
       {/* Header */}
       <Container maxWidth="sm" sx={{ pt: 8, pb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 3,
+          }}
+        >
           <Typography variant="h4" fontWeight="bold" color="text.primary">
             Your Week
           </Typography>
-          
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <IconButton
               onClick={() => setSettingsOpen(true)}
               sx={{
-                bgcolor: alpha('#ff7043', 0.1),
-                '&:hover': { bgcolor: alpha('#ff7043', 0.2) }
+                bgcolor: alpha("#ff7043", 0.1),
+                "&:hover": { bgcolor: alpha("#ff7043", 0.2) },
               }}
             >
-              <Settings sx={{ color: '#ff7043' }} />
+              <Settings sx={{ color: "#ff7043" }} />
             </IconButton>
-            
+
             <Button
               onClick={generateMealPlan}
               disabled={loading}
               startIcon={loading ? <CircularProgress size={16} /> : <Refresh />}
               variant="contained"
               sx={{
-                bgcolor: '#ff7043',
-                '&:hover': { bgcolor: '#ff5722' },
+                bgcolor: "#ff7043",
+                "&:hover": { bgcolor: "#ff5722" },
                 borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 600
+                textTransform: "none",
+                fontWeight: 600,
               }}
             >
-              {loading ? 'Generating...' : 'Generate New Week'}
+              {loading ? "Generating..." : "Generate New Week"}
             </Button>
           </Box>
         </Box>
@@ -346,54 +403,72 @@ const WeekPage = () => {
               p: 2,
               mb: 3,
               borderRadius: 2,
-              bgcolor: alpha('#ff7043', 0.05),
-              border: `1px solid ${alpha('#ff7043', 0.2)}`
+              bgcolor: alpha("#ff7043", 0.05),
+              border: `1px solid ${alpha("#ff7043", 0.2)}`,
             }}
           >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  Planning for <strong>{peopleCount} {peopleCount === 1 ? 'person' : 'people'}</strong>
-                </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Typography variant="body2" color="text.secondary">
                   Weekly Budget: <strong>${weeklyBudget.toFixed(2)}</strong>
                 </Typography>
               </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.primary"
+                  sx={{ fontWeight: 600 }}
+                >
                   Total Meal Cost: <strong>${getTotalMealCost()}</strong>
                 </Typography>
-                <Typography 
-                  variant="body2" 
-                  color={getTotalMealCost() <= weeklyBudget ? 'success.main' : 'error.main'}
+                <Typography
+                  variant="body2"
+                  color={
+                    getTotalMealCost() <= weeklyBudget
+                      ? "success.main"
+                      : "error.main"
+                  }
                   sx={{ fontWeight: 500 }}
                 >
-                  {getTotalMealCost() <= weeklyBudget ? '✓ Within Budget' : '⚠ Over Budget'}
+                  {getTotalMealCost() <= weeklyBudget
+                    ? "✓ Within Budget"
+                    : "⚠ Over Budget"}
                 </Typography>
               </Box>
             </Box>
           </Paper>
         )}
 
-        
-
         {/* Day Filter Chips */}
-        <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1, mb: 3 }}>
+        <Box sx={{ display: "flex", gap: 1, overflowX: "auto", pb: 1, mb: 3 }}>
           {weekdays.map((day) => (
             <Chip
               key={day}
               label={day}
               onClick={() => setSelectedDay(day)}
-              variant={selectedDay === day ? 'filled' : 'outlined'}
+              variant={selectedDay === day ? "filled" : "outlined"}
               sx={{
                 minWidth: 60,
-                bgcolor: selectedDay === day ? '#ff7043' : 'transparent',
-                color: selectedDay === day ? 'white' : '#ff7043',
-                borderColor: '#ff7043',
+                bgcolor: selectedDay === day ? "#ff7043" : "transparent",
+                color: selectedDay === day ? "white" : "#ff7043",
+                borderColor: "#ff7043",
                 fontWeight: 600,
-                '&:hover': {
-                  bgcolor: selectedDay === day ? '#ff5722' : alpha('#ff7043', 0.1)
-                }
+                "&:hover": {
+                  bgcolor:
+                    selectedDay === day ? "#ff5722" : alpha("#ff7043", 0.1),
+                },
               }}
             />
           ))}
@@ -403,134 +478,154 @@ const WeekPage = () => {
       {/* Recipes for Selected Day */}
       <Container maxWidth="sm">
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress sx={{ color: '#ff7043' }} />
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <CircularProgress sx={{ color: "#ff7043" }} />
           </Box>
         ) : !mealPlan ? (
           /* No Meal Plan Generated Yet */
-          <Paper 
+          <Paper
             elevation={0}
-            sx={{ 
-              p: 6, 
-              textAlign: 'center', 
+            sx={{
+              p: 6,
+              textAlign: "center",
               borderRadius: 3,
-              border: `2px dashed ${alpha('#ff7043', 0.3)}`,
-              bgcolor: alpha('#ff7043', 0.02)
+              border: `2px dashed ${alpha("#ff7043", 0.3)}`,
+              bgcolor: alpha("#ff7043", 0.02),
             }}
           >
             <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold" color="text.primary" sx={{ mb: 1 }}>
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                color="text.primary"
+                sx={{ mb: 1 }}
+              >
                 No Meal Plan Generated
               </Typography>
               <Typography color="text.secondary" sx={{ mb: 3 }}>
-                Click "Generate New Week" to create your personalized 7-day meal plan with AI-selected recipes.
+                Click "Generate New Week" to create your personalized 7-day meal
+                plan with AI-selected recipes.
               </Typography>
-              
+
               <Button
                 onClick={generateMealPlan}
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={16} /> : <Refresh />}
+                startIcon={
+                  loading ? <CircularProgress size={16} /> : <Refresh />
+                }
                 variant="contained"
                 size="large"
                 sx={{
-                  bgcolor: '#ff7043',
-                  '&:hover': { bgcolor: '#ff5722' },
+                  bgcolor: "#ff7043",
+                  "&:hover": { bgcolor: "#ff5722" },
                   borderRadius: 2,
-                  textTransform: 'none',
+                  textTransform: "none",
                   fontWeight: 600,
                   px: 4,
-                  py: 1.5
+                  py: 1.5,
                 }}
               >
-                {loading ? 'Generating...' : 'Generate My Week'}
+                {loading ? "Generating..." : "Generate My Week"}
               </Button>
             </Box>
           </Paper>
         ) : (
           <Box sx={{ mb: 4 }}>
             {getCurrentDayRecipes().length > 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {/* Organized by Meal Type */}
-                {['breakfast', 'lunch', 'dinner', 'snack'].map((mealType, mealIndex) => {
-                  const recipe = getCurrentDayRecipes().find(r => r.mealType === mealType);
-                  if (!recipe) return null;
-                  
-                  const mealInfo = getMealTypeInfo(mealType);
-                  
-                  return (
-                    <motion.div
-                      key={mealType}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: mealIndex * 0.15 }}
-                    >
-                      {/* Meal Type Header */}
-                      <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                {["breakfast", "lunch", "dinner", "snack"].map(
+                  (mealType, mealIndex) => {
+                    const recipe = getCurrentDayRecipes().find(
+                      (r) => r.mealType === mealType
+                    );
+                    if (!recipe) return null;
+
+                    const mealInfo = getMealTypeInfo(mealType);
+
+                    return (
+                      <motion.div
+                        key={mealType}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: mealIndex * 0.15 }}
+                      >
+                        {/* Meal Type Header */}
                         <Box
                           sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                            color: mealInfo.color,
-                            fontWeight: 600,
-                            fontSize: '1rem'
+                            mb: 1.5,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
                           }}
                         >
-                          {mealInfo.icon}
-                          {mealInfo.label}
-                        </Box>
-                      </Box>
-                      
-                      <Paper
-                        elevation={0}
-                        onClick={() => handleRecipeClick(recipe)}
-                        sx={{
-                          cursor: 'pointer',
-                          borderRadius: 3,
-                          overflow: 'hidden',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          border: `1px solid ${alpha(mealInfo.color, 0.2)}`,
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: `0 12px 24px ${alpha('#000', 0.15)}`,
-                            borderColor: alpha(mealInfo.color, 0.4),
-                          }
-                        }}
-                      >
-                        <RecipeCard
-                          title={recipe.name}
-                          price={getAdjustedRecipeValues(recipe).adjustedPrice}
-                          description={recipe.description}
-                          time={recipe.time}
-                          image={recipe.image}
-                          recipeId={recipe._id}
-                        />
-                        
-                        {/* AI-Generated Reason */}
-                        {recipe.reason && (
-                          <Box sx={{ px: 2, pb: 2 }}>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: mealInfo.color,
-                                fontStyle: 'italic',
-                                fontSize: '0.75rem',
-                                display: 'block',
-                                mt: 1,
-                                lineHeight: 1.4
-                              }}
-                            >
-                              🤖 {recipe.reason}
-                            </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                              color: mealInfo.color,
+                              fontWeight: 600,
+                              fontSize: "1rem",
+                            }}
+                          >
+                            {mealInfo.icon}
+                            {mealInfo.label}
                           </Box>
-                        )}
-                      </Paper>
-                    </motion.div>
-                  );
-                })}
+                        </Box>
+
+                        <Paper
+                          elevation={0}
+                          onClick={() => handleRecipeClick(recipe)}
+                          sx={{
+                            cursor: "pointer",
+                            borderRadius: 3,
+                            overflow: "hidden",
+                            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                            border: `1px solid ${alpha(mealInfo.color, 0.2)}`,
+                            "&:hover": {
+                              transform: "translateY(-4px)",
+                              boxShadow: `0 12px 24px ${alpha("#000", 0.15)}`,
+                              borderColor: alpha(mealInfo.color, 0.4),
+                            },
+                          }}
+                        >
+                          <RecipeCard
+                            title={recipe.name}
+                            description={recipe.description}
+                            time={recipe.time}
+                            image={recipe.image}
+                            recipeId={recipe._id}
+                            isLiked={likedRecipes.has(recipe._id)}
+                            onLikeChange={handleLikeChange}
+                          />
+
+                          {/* AI-Generated Reason */}
+                          {recipe.reason && (
+                            <Box sx={{ px: 2, pb: 2 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: mealInfo.color,
+                                  fontStyle: "italic",
+                                  fontSize: "0.75rem",
+                                  display: "block",
+                                  mt: 1,
+                                  lineHeight: 1.4,
+                                }}
+                              >
+                                🤖 {recipe.reason}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Paper>
+                      </motion.div>
+                    );
+                  }
+                )}
               </Box>
             ) : (
-              <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
+              <Paper sx={{ p: 4, textAlign: "center", borderRadius: 3 }}>
                 <Typography color="text.secondary">
                   No recipes planned for {selectedDay}
                 </Typography>
@@ -541,59 +636,82 @@ const WeekPage = () => {
 
         {/* Grocery List - Only show when meal plan exists */}
         {mealPlan && (
-          <Card elevation={0} sx={{ borderRadius: 3, border: `1px solid ${alpha('#000', 0.08)}` }}>
+          <Card
+            elevation={0}
+            sx={{ borderRadius: 3, border: `1px solid ${alpha("#000", 0.08)}` }}
+          >
             <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <ShoppingCart sx={{ color: '#4caf50', mr: 1 }} />
+              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <ShoppingCart sx={{ color: "#4caf50", mr: 1 }} />
                 <Typography variant="h6" fontWeight="bold">
                   Your Grocery List
-              </Typography>
-            </Box>
-            
-            {mealPlan?.groceryList && mealPlan.groceryList.length > 0 ? (
-              <List disablePadding>
-                {getAdjustedGroceryList().map((item, index) => (
-                  <React.Fragment key={index}>
-                    <ListItem
-                      disablePadding
-                      sx={{
-                        py: 1,
-                        textDecoration: checkedItems.has(`${item.name}-${item.amount}`) ? 'line-through' : 'none',
-                        opacity: checkedItems.has(`${item.name}-${item.amount}`) ? 0.6 : 1
-                      }}
-                    >
-                      <ListItemIcon sx={{ minWidth: 40 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => toggleGroceryItem(`${item.name}-${item.amount}`)}
-                        >
-                          {checkedItems.has(`${item.name}-${item.amount}`) ? (
-                            <CheckCircle sx={{ color: '#4caf50', fontSize: 20 }} />
-                          ) : (
-                            <RadioButtonUnchecked sx={{ color: alpha('#000', 0.4), fontSize: 20 }} />
-                          )}
-                        </IconButton>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={item.name}
-                        secondary={item.amount}
-                        primaryTypographyProps={{ fontWeight: 500 }}
-                        secondaryTypographyProps={{ color: 'text.secondary', fontSize: '0.875rem' }}
-                      />
-                    </ListItem>
-                    {index < getAdjustedGroceryList().length - 1 && (
-                      <Divider sx={{ ml: 5 }} />
-                    )}
-                  </React.Fragment>
-                ))}
-              </List>
-            ) : (
-              <Typography color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
-                Generate a meal plan to see your grocery list
-              </Typography>
-            )}
-          </CardContent>
-        </Card>
+                </Typography>
+              </Box>
+
+              {mealPlan?.groceryList && mealPlan.groceryList.length > 0 ? (
+                <List disablePadding>
+                  {getGroceryList().map((item, index) => (
+                    <React.Fragment key={index}>
+                      <ListItem
+                        disablePadding
+                        sx={{
+                          py: 1,
+                          textDecoration: checkedItems.has(
+                            `${item.name}-${item.amount}`
+                          )
+                            ? "line-through"
+                            : "none",
+                          opacity: checkedItems.has(
+                            `${item.name}-${item.amount}`
+                          )
+                            ? 0.6
+                            : 1,
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 40 }}>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              toggleGroceryItem(`${item.name}-${item.amount}`)
+                            }
+                          >
+                            {checkedItems.has(`${item.name}-${item.amount}`) ? (
+                              <CheckCircle
+                                sx={{ color: "#4caf50", fontSize: 20 }}
+                              />
+                            ) : (
+                              <RadioButtonUnchecked
+                                sx={{ color: alpha("#000", 0.4), fontSize: 20 }}
+                              />
+                            )}
+                          </IconButton>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={item.name}
+                          secondary={item.amount}
+                          primaryTypographyProps={{ fontWeight: 500 }}
+                          secondaryTypographyProps={{
+                            color: "text.secondary",
+                            fontSize: "0.875rem",
+                          }}
+                        />
+                      </ListItem>
+                      {index < getGroceryList().length - 1 && (
+                        <Divider sx={{ ml: 5 }} />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </List>
+              ) : (
+                <Typography
+                  color="text.secondary"
+                  sx={{ textAlign: "center", py: 2 }}
+                >
+                  Generate a meal plan to see your grocery list
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
         )}
       </Container>
 
@@ -606,7 +724,14 @@ const WeekPage = () => {
             animate="visible"
             exit="exit"
             onClick={handleModalClose}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.1)",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
+              zIndex: 40,
+            }}
           />
         )}
       </AnimatePresence>
@@ -627,46 +752,64 @@ const WeekPage = () => {
                 handleModalClose();
               }
             }}
-            className="fixed bottom-0 left-0 right-0 z-50 max-h-[90vh] overflow-hidden"
-            style={{ 
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1300,
+              maxHeight: "90vh",
+              overflow: "hidden",
               pointerEvents: "auto",
             }}
           >
             <Paper
               elevation={24}
               sx={{
-                borderRadius: '24px 24px 0 0',
+                borderRadius: "24px 24px 0 0",
                 pt: 1.5,
                 pb: 1,
-                display: 'flex',
-                justifyContent: 'center'
+                display: "flex",
+                justifyContent: "center",
               }}
             >
               <Box
                 sx={{
                   width: 48,
                   height: 6,
-                  bgcolor: alpha('#000', 0.2),
-                  borderRadius: 3
+                  bgcolor: alpha("#000", 0.2),
+                  borderRadius: 3,
                 }}
               />
             </Paper>
 
-            <Paper elevation={24} sx={{ bgcolor: 'white', overflow: 'hidden' }}>
+            <Paper elevation={24} sx={{ bgcolor: "white", overflow: "hidden" }}>
               <SingleRecipe
                 title={selectedRecipe.name}
-                price={getAdjustedRecipeValues(selectedRecipe).adjustedPrice}
                 description={selectedRecipe.description}
                 time={selectedRecipe.time}
                 image={selectedRecipe.image}
                 carbohydrates={selectedRecipe.carbohydrates}
                 protein={selectedRecipe.protein}
                 fat={selectedRecipe.fat}
+                calories={selectedRecipe.calories}
                 steps={selectedRecipe.steps}
                 tags={selectedRecipe.tags}
                 allergens={selectedRecipe.allergens}
-                ingredients={getAdjustedRecipeValues(selectedRecipe).adjustedIngredients}
-                calories={selectedRecipe.calories}
+                ingredients={(selectedRecipe.ingredients || []).map((ing) => {
+                  // Handle both populated (ingredient.name) and direct (name) formats
+                  const ingredientName =
+                    ing.ingredient?.name || ing.name || "Unknown";
+                  const amount =
+                    typeof ing.amount === "number"
+                      ? `${ing.amount} ${ing.unit || ""}`.trim()
+                      : ing.amount;
+
+                  return {
+                    name: ingredientName,
+                    amount: amount,
+                  };
+                })}
               />
             </Paper>
           </motion.div>
@@ -674,7 +817,12 @@ const WeekPage = () => {
       </AnimatePresence>
 
       {/* Settings Dialog */}
-      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
           <Typography variant="h6" fontWeight="bold">
             Meal Plan Generation Settings
@@ -682,57 +830,6 @@ const WeekPage = () => {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
-            {/* People Count */}
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 2 }}>
-                Number of People
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <IconButton
-                  onClick={() => setPeopleCount(Math.max(1, peopleCount - 1))}
-                  disabled={peopleCount <= 1}
-                  sx={{
-                    bgcolor: alpha('#ff7043', 0.1),
-                    '&:hover': { bgcolor: alpha('#ff7043', 0.2) },
-                    '&:disabled': { bgcolor: alpha('#000', 0.05) }
-                  }}
-                >
-                  <Remove sx={{ color: peopleCount <= 1 ? alpha('#000', 0.3) : '#ff7043' }} />
-                </IconButton>
-                
-                <Box
-                  sx={{
-                    minWidth: 60,
-                    textAlign: 'center',
-                    py: 1,
-                    px: 2,
-                    border: `2px solid ${alpha('#ff7043', 0.2)}`,
-                    borderRadius: 2,
-                    bgcolor: alpha('#ff7043', 0.05)
-                  }}
-                >
-                  <Typography variant="h6" fontWeight="bold" color="#ff7043">
-                    {peopleCount}
-                  </Typography>
-                </Box>
-                
-                <IconButton
-                  onClick={() => setPeopleCount(Math.min(20, peopleCount + 1))}
-                  disabled={peopleCount >= 20}
-                  sx={{
-                    bgcolor: alpha('#ff7043', 0.1),
-                    '&:hover': { bgcolor: alpha('#ff7043', 0.2) },
-                    '&:disabled': { bgcolor: alpha('#000', 0.05) }
-                  }}
-                >
-                  <Add sx={{ color: peopleCount >= 20 ? alpha('#000', 0.3) : '#ff7043' }} />
-                </IconButton>
-              </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                Ingredients and prices will be adjusted for {peopleCount} {peopleCount === 1 ? 'person' : 'people'} (for this meal plan only)
-              </Typography>
-            </Box>
-
             {/* Weekly Budget */}
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 2 }}>
@@ -745,15 +842,20 @@ const WeekPage = () => {
                 fullWidth
                 inputProps={{ min: 20, max: 1000, step: 10 }}
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#ff7043'
-                    }
-                  }
+                  "& .MuiOutlinedInput-root": {
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#ff7043",
+                    },
+                  },
                 }}
               />
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                Daily budget: ${(weeklyBudget / 7).toFixed(2)} • Per meal: ${(weeklyBudget / 28).toFixed(2)}
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 1, display: "block" }}
+              >
+                Daily budget: ${(weeklyBudget / 7).toFixed(2)} • Per meal: $
+                {(weeklyBudget / 28).toFixed(2)}
               </Typography>
             </Box>
           </Box>
@@ -770,8 +872,8 @@ const WeekPage = () => {
             }}
             variant="contained"
             sx={{
-              bgcolor: '#ff7043',
-              '&:hover': { bgcolor: '#ff5722' }
+              bgcolor: "#ff7043",
+              "&:hover": { bgcolor: "#ff5722" },
             }}
           >
             Save Budget Settings

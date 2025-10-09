@@ -1,48 +1,37 @@
-import { useState } from 'react';
-
+import { useState } from "react";
 
 import {
   Box,
   Typography,
-  Card,
   CardMedia,
-  Chip,
   IconButton,
   LinearProgress,
   Button,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  Avatar,
-  Rating,
-  Container
-} from '@mui/material';
+  Container,
+} from "@mui/material";
 import {
-  Remove,
-  Add,
   NavigateBefore,
   NavigateNext,
   AccessTime,
-  AttachMoney,
-  FiberManualRecord
-} from '@mui/icons-material';
-import { alpha } from '@mui/material/styles';
+  FiberManualRecord,
+} from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
+
 type Ingredient = {
   name: string;
   amount: string;
 };
+
 type CardProps = {
   title: string;
-  price: number;
   time: number;
   image: string;
   description: string;
   steps: string[];
-  protein: number;
-  calories: number;
-  fat: number;
-  carbohydrates: number;
+  protein?: number;
+  calories?: number;
+  fat?: number;
+  carbohydrates?: number;
   tags: string[];
   allergens: string[];
   ingredients: Ingredient[];
@@ -50,7 +39,6 @@ type CardProps = {
 
 export default function SingleRecipe({
   title,
-  price,
   time,
   image,
   description,
@@ -64,7 +52,12 @@ export default function SingleRecipe({
   ingredients,
 }: CardProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [person, setPerson] = useState(2);
+
+  // Helper function to format numbers with European decimal style (comma separator)
+  const formatNumber = (num: number | undefined) => {
+    if (num === undefined || num === null) return "0,0";
+    return num.toFixed(1).replace(".", ",");
+  };
 
   const nextStep = () => {
     if (steps && currentStep < steps.length - 1) {
@@ -84,253 +77,444 @@ export default function SingleRecipe({
 
   return (
     <Container maxWidth="sm" disableGutters>
-      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
         {/* Main Content */}
         <Box
           sx={{
             flex: 1,
-            overflowY: 'auto',
-            bgcolor: 'white',
-            '&::-webkit-scrollbar': { display: 'none' },
-            msOverflowStyle: 'none',
-            scrollbarWidth: 'none',
+            overflowY: "auto",
+            bgcolor: "white",
+            "&::-webkit-scrollbar": { display: "none" },
+            msOverflowStyle: "none",
+            scrollbarWidth: "none",
           }}
         >
-          <Box sx={{ p: 3, pb: 10 }}>
+          <Box sx={{ p: 3, pb: 15 }}>
             {/* Hero Image */}
-            <Card elevation={0} sx={{ mb: 3, borderRadius: 3, overflow: 'hidden' }}>
+            <Box
+              sx={{
+                position: "relative",
+                height: 240,
+                borderRadius: 4,
+                overflow: "hidden",
+                mb: 3,
+                boxShadow: `0 8px 24px ${alpha("#000", 0.15)}`,
+              }}
+            >
               <CardMedia
                 component="img"
-                height="200"
                 image={image}
                 alt={title}
-                sx={{ objectFit: 'cover' }}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
               />
-            </Card>
 
-            {/* Header with Title and Person Counter */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-              <Typography variant="h4" fontWeight="bold" sx={{ flex: 1, mr: 2 }}>
-                {title}
-              </Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <IconButton 
-                  size="small"
-                  onClick={() => person > 1 && setPerson(person - 1)}
-                  disabled={person <= 1}
+              {/* Gradient Overlay */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: `linear-gradient(135deg,
+                    ${alpha("#000", 0.1)} 0%,
+                    ${alpha("#ff7043", 0.15)} 50%,
+                    ${alpha("#000", 0.3)} 100%)`,
+                }}
+              />
+
+              {/* Title Overlay */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  p: 3,
+                  background: `linear-gradient(transparent, ${alpha(
+                    "#000",
+                    0.9
+                  )})`,
+                }}
+              >
+                <Typography
+                  variant="h4"
+                  fontWeight="bold"
                   sx={{
-                    border: `1px solid ${alpha('#000', 0.2)}`,
-                    '&:hover': { bgcolor: alpha('#ff7043', 0.1) }
+                    color: "white",
+                    lineHeight: 1.2,
+                    textShadow: `0 2px 8px ${alpha("#000", 0.8)}`,
                   }}
                 >
-                  <Remove fontSize="small" />
-                </IconButton>
-                
-                <Typography variant="h6" sx={{ minWidth: 30, textAlign: 'center' }}>
-                  {person}
+                  {title}
                 </Typography>
-                
-                <IconButton 
-                  size="small"
-                  onClick={() => setPerson(person + 1)}
-                  sx={{
-                    bgcolor: '#ff7043',
-                    color: 'white',
-                    '&:hover': { bgcolor: '#ff5722' }
-                  }}
-                >
-                  <Add fontSize="small" />
-                </IconButton>
               </Box>
             </Box>
 
             {/* Quick Stats */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-              <Paper elevation={0} sx={{ flex: 1, p: 2, textAlign: 'center', bgcolor: alpha('#ff7043', 0.1), borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <Rating value={4.5} readOnly size="small" />
-                </Box>
-                <Typography variant="caption" color="text.secondary">Rating</Typography>
-              </Paper>
-              
-              <Paper elevation={0} sx={{ flex: 1, p: 2, textAlign: 'center', bgcolor: alpha('#4caf50', 0.1), borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <AccessTime sx={{ color: '#4caf50', mr: 0.5 }} fontSize="small" />
-                  <Typography variant="h6" fontWeight="bold" color="#4caf50">
+            <Box sx={{ mb: 4 }}>
+              <Box
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  bgcolor: "white",
+                  borderRadius: 2,
+                  border: "1px solid #e0e0e0",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mb: 1,
+                  }}
+                >
+                  <AccessTime sx={{ color: "#666", mr: 1, fontSize: 20 }} />
+                  <Typography variant="h5" fontWeight="600" color="#1a1a1a">
                     {time}
                   </Typography>
                 </Box>
-                <Typography variant="caption" color="text.secondary">Minutes</Typography>
-              </Paper>
-              
-              <Paper elevation={0} sx={{ flex: 1, p: 2, textAlign: 'center', bgcolor: alpha('#2196f3', 0.1), borderRadius: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                  <AttachMoney sx={{ color: '#2196f3', mr: 0.5 }} fontSize="small" />
-                  <Typography variant="h6" fontWeight="bold" color="#2196f3">
-                    {(price * person).toFixed(2)}
-                  </Typography>
-                </Box>
-                <Typography variant="caption" color="text.secondary">Price</Typography>
-              </Paper>
+                <Typography variant="body2" color="#666" fontWeight="500">
+                  Minutes
+                </Typography>
+              </Box>
             </Box>
 
             {/* Description */}
-            <Card elevation={0} sx={{ p: 2, mb: 3, bgcolor: alpha('#000', 0.02), borderRadius: 2 }}>
-              <Typography variant="body1" color="text.secondary" lineHeight={1.6}>
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="body1" color="#1a1a1a" lineHeight={1.6}>
                 {description}
               </Typography>
-            </Card>
+            </Box>
 
             {/* Nutrition Info */}
-            <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 3, border: `1px solid ${alpha('#000', 0.1)}` }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                variant="h6"
+                fontWeight="600"
+                sx={{ mb: 3, color: "#1a1a1a" }}
+              >
                 Nutrition Facts
               </Typography>
-              
-              <Box sx={{ display: 'flex', gap: 4 }}>
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" fontWeight="medium">Calories:</Typography>
-                    <Typography variant="body2">{calories} kcal</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" fontWeight="medium">Protein:</Typography>
-                    <Typography variant="body2">{protein}g</Typography>
-                  </Box>
+
+              <Box
+                sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}
+              >
+                <Box
+                  sx={{
+                    p: 3,
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    textAlign: "center",
+                    border: "1px solid #e0e0e0",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <Typography
+                    variant="h4"
+                    fontWeight="600"
+                    color="#1a1a1a"
+                    sx={{ mb: 0.5 }}
+                  >
+                    {calories ?? 0}
+                  </Typography>
+                  <Typography variant="body2" color="#666" fontWeight="500">
+                    Calories
+                  </Typography>
                 </Box>
-                
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" fontWeight="medium">Fat:</Typography>
-                    <Typography variant="body2">{fat}g</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" fontWeight="medium">Carbs:</Typography>
-                    <Typography variant="body2">{carbohydrates}g</Typography>
-                  </Box>
+
+                <Box
+                  sx={{
+                    p: 3,
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    textAlign: "center",
+                    border: "1px solid #e0e0e0",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <Typography
+                    variant="h4"
+                    fontWeight="600"
+                    color="#1a1a1a"
+                    sx={{ mb: 0.5 }}
+                  >
+                    {formatNumber(protein)}g
+                  </Typography>
+                  <Typography variant="body2" color="#666" fontWeight="500">
+                    Protein
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    p: 3,
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    textAlign: "center",
+                    border: "1px solid #e0e0e0",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <Typography
+                    variant="h4"
+                    fontWeight="600"
+                    color="#1a1a1a"
+                    sx={{ mb: 0.5 }}
+                  >
+                    {formatNumber(fat)}g
+                  </Typography>
+                  <Typography variant="body2" color="#666" fontWeight="500">
+                    Fat
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    p: 3,
+                    bgcolor: "white",
+                    borderRadius: 2,
+                    textAlign: "center",
+                    border: "1px solid #e0e0e0",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  <Typography
+                    variant="h4"
+                    fontWeight="600"
+                    color="#1a1a1a"
+                    sx={{ mb: 0.5 }}
+                  >
+                    {formatNumber(carbohydrates)}g
+                  </Typography>
+                  <Typography variant="body2" color="#666" fontWeight="500">
+                    Carbs
+                  </Typography>
                 </Box>
               </Box>
-            </Paper>
+            </Box>
 
             {/* Tags and Allergens */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                variant="h6"
+                fontWeight="600"
+                sx={{ mb: 3, color: "#1a1a1a" }}
+              >
                 Tags & Allergens
               </Typography>
-              
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>
-                  Tags:
+
+              <Box sx={{ mb: 3 }}>
+                <Typography
+                  variant="body1"
+                  fontWeight="500"
+                  sx={{ mb: 2, color: "#1a1a1a" }}
+                >
+                  Tags
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                   {Array.isArray(tags) && tags.length > 0 ? (
                     tags.map((tag) => (
-                      <Chip
+                      <Box
                         key={tag}
-                        label={tag}
-                        size="small"
-                        sx={{ bgcolor: alpha('#2196f3', 0.1), color: '#2196f3' }}
-                      />
+                        sx={{
+                          px: 2,
+                          py: 0.5,
+                          bgcolor: "#f5f5f5",
+                          borderRadius: 1,
+                          border: "1px solid #e0e0e0",
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="#666"
+                          fontWeight="500"
+                        >
+                          {tag}
+                        </Typography>
+                      </Box>
                     ))
                   ) : (
-                    <Typography variant="body2" color="text.secondary">None</Typography>
+                    <Typography
+                      variant="body2"
+                      color="#999"
+                      sx={{ fontStyle: "italic" }}
+                    >
+                      No tags available
+                    </Typography>
                   )}
                 </Box>
               </Box>
 
               <Box>
-                <Typography variant="body2" fontWeight="medium" sx={{ mb: 1 }}>
-                  Allergens:
+                <Typography
+                  variant="body1"
+                  fontWeight="500"
+                  sx={{ mb: 2, color: "#1a1a1a" }}
+                >
+                  Allergens
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                   {Array.isArray(allergens) && allergens.length > 0 ? (
                     allergens.map((allergen) => (
-                      <Chip
+                      <Box
                         key={allergen}
-                        label={allergen}
-                        size="small"
-                        sx={{ bgcolor: alpha('#f44336', 0.1), color: '#f44336' }}
-                      />
+                        sx={{
+                          px: 2,
+                          py: 0.5,
+                          bgcolor: "#f5f5f5",
+                          borderRadius: 1,
+                          border: "1px solid #e0e0e0",
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="#666"
+                          fontWeight="500"
+                        >
+                          {allergen}
+                        </Typography>
+                      </Box>
                     ))
                   ) : (
-                    <Typography variant="body2" color="text.secondary">None</Typography>
+                    <Typography
+                      variant="body2"
+                      color="#999"
+                      sx={{ fontStyle: "italic" }}
+                    >
+                      No allergens
+                    </Typography>
                   )}
                 </Box>
               </Box>
             </Box>
 
             {/* Cooking Steps */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+            <Box sx={{ mb: 4 }}>
+              <Typography
+                variant="h6"
+                fontWeight="600"
+                sx={{ mb: 3, color: "#1a1a1a" }}
+              >
                 Cooking Steps
               </Typography>
-              
+
               {Array.isArray(steps) && steps.length > 0 ? (
                 <Box>
                   {/* Main Step Card */}
-                  <Paper
-                    elevation={0}
+                  <Box
                     sx={{
                       p: 3,
-                      mb: 2,
-                      borderRadius: 3,
-                      background: 'linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%)',
-                      border: `1px solid ${alpha('#2196f3', 0.2)}`
+                      mb: 3,
+                      bgcolor: "white",
+                      borderRadius: 2,
+                      border: "1px solid #e0e0e0",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                     }}
                   >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                      <Avatar
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        mb: 2,
+                      }}
+                    >
+                      <Box
                         sx={{
-                          bgcolor: '#2196f3',
-                          width: 32,
-                          height: 32,
-                          fontSize: '0.875rem',
-                          fontWeight: 'bold'
+                          width: 40,
+                          height: 40,
+                          borderRadius: "50%",
+                          bgcolor: "#f5f5f5",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          border: "1px solid #e0e0e0",
                         }}
                       >
-                        {currentStep + 1}
-                      </Avatar>
-                      
-                      <Typography variant="caption" color="text.secondary">
+                        <Typography
+                          variant="body1"
+                          fontWeight="600"
+                          color="#1a1a1a"
+                        >
+                          {currentStep + 1}
+                        </Typography>
+                      </Box>
+
+                      <Typography variant="body2" color="#666" fontWeight="500">
                         Step {currentStep + 1} of {steps.length}
                       </Typography>
                     </Box>
-                    
-                    <Typography variant="body1" lineHeight={1.6}>
+
+                    <Typography
+                      variant="body1"
+                      lineHeight={1.6}
+                      color="#1a1a1a"
+                    >
                       {steps[currentStep]}
                     </Typography>
-                  </Paper>
+                  </Box>
 
                   {/* Navigation */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 3,
+                    }}
+                  >
                     <Button
                       startIcon={<NavigateBefore />}
                       onClick={prevStep}
                       disabled={currentStep === 0}
-                      variant="contained"
+                      variant="outlined"
                       size="small"
-                      sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' } }}
+                      sx={{
+                        borderColor: "#e0e0e0",
+                        color: "#666",
+                        borderRadius: 1,
+                        px: 2,
+                        py: 1,
+                        fontWeight: "500",
+                        "&:hover": {
+                          borderColor: "#ccc",
+                          bgcolor: "#f9f9f9",
+                        },
+                        "&:disabled": {
+                          borderColor: "#e0e0e0",
+                          color: "#ccc",
+                        },
+                      }}
                     >
                       Previous
                     </Button>
 
                     {/* Step Indicators */}
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                       {steps.map((_, index) => (
                         <IconButton
                           key={index}
                           onClick={() => goToStep(index)}
                           size="small"
-                          sx={{ p: 0.25 }}
+                          sx={{ p: 0.5 }}
                         >
                           <FiberManualRecord
                             sx={{
                               fontSize: 12,
-                              color: index === currentStep ? '#2196f3' : 
-                                     index < currentStep ? '#4caf50' : alpha('#000', 0.3),
-                              transform: index === currentStep ? 'scale(1.2)' : 'scale(1)',
-                              transition: 'all 0.3s'
+                              color:
+                                index === currentStep
+                                  ? "#666"
+                                  : index < currentStep
+                                  ? "#999"
+                                  : "#e0e0e0",
                             }}
                           />
                         </IconButton>
@@ -341,9 +525,24 @@ export default function SingleRecipe({
                       endIcon={<NavigateNext />}
                       onClick={nextStep}
                       disabled={currentStep === steps.length - 1}
-                      variant="contained"
+                      variant="outlined"
                       size="small"
-                      sx={{ bgcolor: '#2196f3', '&:hover': { bgcolor: '#1976d2' } }}
+                      sx={{
+                        borderColor: "#e0e0e0",
+                        color: "#666",
+                        borderRadius: 1,
+                        px: 2,
+                        py: 1,
+                        fontWeight: "500",
+                        "&:hover": {
+                          borderColor: "#ccc",
+                          bgcolor: "#f9f9f9",
+                        },
+                        "&:disabled": {
+                          borderColor: "#e0e0e0",
+                          color: "#ccc",
+                        },
+                      }}
                     >
                       Next
                     </Button>
@@ -355,65 +554,97 @@ export default function SingleRecipe({
                       variant="determinate"
                       value={((currentStep + 1) / steps.length) * 100}
                       sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        bgcolor: alpha('#2196f3', 0.1),
-                        '& .MuiLinearProgress-bar': {
-                          background: 'linear-gradient(90deg, #2196f3 0%, #3f51b5 100%)',
-                          borderRadius: 4
-                        }
+                        height: 4,
+                        borderRadius: 2,
+                        bgcolor: "#f0f0f0",
+                        "& .MuiLinearProgress-bar": {
+                          bgcolor: "#666",
+                          borderRadius: 2,
+                        },
                       }}
                     />
-                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
-                      Progress: {Math.round(((currentStep + 1) / steps.length) * 100)}%
+                    <Typography
+                      variant="body2"
+                      color="#666"
+                      sx={{ mt: 1, textAlign: "center", fontWeight: "500" }}
+                    >
+                      {Math.round(((currentStep + 1) / steps.length) * 100)}%
+                      complete
                     </Typography>
                   </Box>
                 </Box>
               ) : (
-                <Paper elevation={0} sx={{ p: 3, textAlign: 'center', bgcolor: alpha('#2196f3', 0.1), borderRadius: 2 }}>
-                  <Typography color="text.secondary">No cooking steps available</Typography>
-                </Paper>
+                <Box
+                  sx={{
+                    p: 4,
+                    textAlign: "center",
+                    bgcolor: "#f9f9f9",
+                    borderRadius: 2,
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
+                  <Typography color="#999" sx={{ fontStyle: "italic" }}>
+                    No cooking steps available
+                  </Typography>
+                </Box>
               )}
             </Box>
 
             {/* Ingredients */}
-            <Box>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+            <Box sx={{ mb: 6 }}>
+              <Typography
+                variant="h6"
+                fontWeight="600"
+                sx={{ mb: 3, color: "#1a1a1a" }}
+              >
                 Ingredients
               </Typography>
-              
+
               {Array.isArray(ingredients) && ingredients.length > 0 ? (
-                <List disablePadding>
+                <Box>
                   {ingredients.map((ingredient, index) => (
-                    <ListItem
+                    <Box
                       key={index}
                       sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        py: 2,
+                        px: 3,
                         mb: 1,
-                        bgcolor: alpha('#4caf50', 0.08),
-                        borderRadius: 2,
-                        border: `1px solid ${alpha('#4caf50', 0.2)}`
+                        bgcolor: "white",
+                        borderRadius: 1,
+                        border: "1px solid #e0e0e0",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                       }}
                     >
-                      <ListItemText
-                        primary={
-                          <Typography variant="body1" fontWeight="medium">
-                            {ingredient.name}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant="body2" color="text.secondary">
-                            {parseFloat(ingredient.amount) * person} 
-                            {ingredient.amount.replace(/[\d.]/g, '').trim()}
-                          </Typography>
-                        }
-                      />
-                    </ListItem>
+                      <Typography
+                        variant="body1"
+                        fontWeight="500"
+                        color="#1a1a1a"
+                      >
+                        {ingredient.name}
+                      </Typography>
+                      <Typography variant="body2" color="#666" fontWeight="500">
+                        {ingredient.amount}
+                      </Typography>
+                    </Box>
                   ))}
-                </List>
+                </Box>
               ) : (
-                <Paper elevation={0} sx={{ p: 3, textAlign: 'center', bgcolor: alpha('#4caf50', 0.1), borderRadius: 2 }}>
-                  <Typography color="text.secondary">No ingredients available</Typography>
-                </Paper>
+                <Box
+                  sx={{
+                    p: 4,
+                    textAlign: "center",
+                    bgcolor: "#f9f9f9",
+                    borderRadius: 2,
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
+                  <Typography color="#999" sx={{ fontStyle: "italic" }}>
+                    No ingredients available
+                  </Typography>
+                </Box>
               )}
             </Box>
           </Box>
@@ -421,4 +652,4 @@ export default function SingleRecipe({
       </Box>
     </Container>
   );
-};
+}

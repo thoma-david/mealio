@@ -3,12 +3,18 @@ import Dashboard from "./pages/Dashboard";
 import WeekPage from "./pages/WeekPage";
 import ExplorePage from "./pages/ExplorePage";
 import FavoritesPage from "./pages/FavoritesPage";
+import SignupPage from "./pages/SignUpPage";
+import ProgressPage from "./pages/ProgressPage";
+
 import "./App.css";
 
 import PublicRoute from "./routes/publicRoutes";
 import ProtectedRoute from "./routes/protectedRoutes";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import QuizWrapper from "./components/QuizWrapper";
+import ProfileRequiredRoute from "./routes/profileRequiredRoutes";
+import Settings from "./pages/Settings";
 function App() {
   const router = createBrowserRouter([
     {
@@ -20,35 +26,67 @@ function App() {
       ),
     },
     {
-      path: "/",
+      path: "/signup",
+      element: (
+        <PublicRoute>
+          <SignupPage />
+        </PublicRoute>
+      ),
+    },
+    {
+      path: "/quiz",
       element: (
         <ProtectedRoute>
-          <Dashboard />
+          <QuizWrapper />
         </ProtectedRoute>
+      ),
+    },
+    {
+      path: "/",
+      element: (
+        <ProfileRequiredRoute>
+          <Dashboard />
+        </ProfileRequiredRoute>
       ),
     },
     {
       path: "/explore",
       element: (
-        <ProtectedRoute>
+        <ProfileRequiredRoute>
           <ExplorePage />
-        </ProtectedRoute>
+        </ProfileRequiredRoute>
       ),
     },
     {
       path: "/favorites",
       element: (
-        <ProtectedRoute>
+        <ProfileRequiredRoute>
           <FavoritesPage />
-        </ProtectedRoute>
+        </ProfileRequiredRoute>
       ),
     },
     {
       path: "/week",
       element: (
-        <ProtectedRoute>
+        <ProfileRequiredRoute>
           <WeekPage />
-        </ProtectedRoute>
+        </ProfileRequiredRoute>
+      ),
+    },
+    {
+      path: "/progress",
+      element: (
+        <ProfileRequiredRoute>
+          <ProgressPage />
+        </ProfileRequiredRoute>
+      ),
+    },
+    {
+      path: "/settings",
+      element: (
+        <ProfileRequiredRoute>
+          <Settings />
+        </ProfileRequiredRoute>
       ),
     },
   ]);
