@@ -15,6 +15,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import QuizWrapper from "./components/QuizWrapper";
 import ProfileRequiredRoute from "./routes/profileRequiredRoutes";
 import Settings from "./pages/Settings";
+import { AuthProvider } from "./context/AuthContext";
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -91,9 +93,9 @@ function App() {
     },
   ]);
   return (
-    <>
+    <AuthProvider>
       <RouterProvider router={router} />
-    </>
+    </AuthProvider>
   );
 }
 
