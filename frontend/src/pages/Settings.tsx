@@ -34,9 +34,7 @@ import {
   ArrowBack,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/auth";
+import { API } from "../config/api";
 
 interface Profile {
   _id: string;
@@ -89,7 +87,7 @@ const Settings = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_URL}/profile`, {
+      const response = await fetch(API.AUTH.GET_PROFILE, {
         credentials: "include",
       });
 
@@ -114,7 +112,7 @@ const Settings = () => {
     setSuccess(false);
 
     try {
-      const response = await fetch(`${API_URL}/update-profile`, {
+      const response = await fetch(API.AUTH.UPDATE_PROFILE, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

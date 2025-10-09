@@ -16,29 +16,7 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { API } from "../config/api";
-
-type Ingredient = {
-  name: string;
-  amount: string;
-};
-
-type Recipe = {
-  _id: string;
-  name: string;
-  estimated_price: number;
-  description: string;
-  time: number;
-  image: string;
-  carbohydrates: number;
-  calories: number;
-  protein: number;
-  fat: number;
-  steps: string[];
-  tags: string[];
-  meal_type: string;
-  allergens: string[];
-  ingredients: Ingredient[];
-};
+import type { Recipe } from "../types/recipe";
 
 const FavoritesPage = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -299,7 +277,7 @@ const FavoritesPage = () => {
                     <RecipeCard
                       title={recipe.name}
                       description={recipe.description}
-                      time={recipe.time}
+                      time={recipe.preparationTime}
                       image={recipe.image}
                       recipeId={recipe._id}
                       isLiked={likedRecipeIds.includes(recipe._id)}
@@ -414,16 +392,23 @@ const FavoritesPage = () => {
                   description={
                     selectedRecipe.description || "No description available"
                   }
-                  time={selectedRecipe.time || 0}
+                  time={selectedRecipe.preparationTime || 0}
                   image={selectedRecipe.image || ""}
-                  carbohydrates={selectedRecipe.carbohydrates || 0}
-                  protein={selectedRecipe.protein || 0}
-                  fat={selectedRecipe.fat || 0}
+                  carbohydrates={
+                    selectedRecipe.nutrients?.carbohydrates?.value || 0
+                  }
+                  protein={selectedRecipe.nutrients?.protein?.value || 0}
+                  fat={selectedRecipe.nutrients?.fat?.value || 0}
                   steps={selectedRecipe.steps || []}
                   tags={selectedRecipe.tags || []}
                   allergens={selectedRecipe.allergens || []}
-                  ingredients={selectedRecipe.ingredients || []}
-                  calories={selectedRecipe.calories || 0}
+                  ingredients={
+                    selectedRecipe.ingredients?.map((ing) => ({
+                      name: ing.ingredient.name,
+                      amount: `${ing.amount} ${ing.unit}`,
+                    })) || []
+                  }
+                  calories={selectedRecipe.nutrients?.calories?.value || 0}
                 />
               </Paper>
             ) : (
