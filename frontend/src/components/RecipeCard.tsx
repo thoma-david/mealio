@@ -16,7 +16,7 @@ import {
   FavoriteRounded,
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
-import { API_URL } from "../api/auth";
+import { API } from "../config/api";
 
 type CardProps = {
   title: string;
@@ -64,7 +64,7 @@ export default function RecipeCard({
     try {
       if (liked) {
         // Remove from favorites
-        const response = await fetch(`${API_URL}/remove-recipe-preference`, {
+        const response = await fetch(API.AUTH.REMOVE_RECIPE_PREFERENCE, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -85,7 +85,7 @@ export default function RecipeCard({
       } else {
         // Add to favorites
         console.log("Adding to favorites:", recipeId);
-        const response = await fetch(`${API_URL}/like-recipe`, {
+        const response = await fetch(API.AUTH.LIKE_RECIPE, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
