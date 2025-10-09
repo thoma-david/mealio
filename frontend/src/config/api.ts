@@ -1,5 +1,5 @@
 // Base API URL - should be just the domain, no path
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // API Endpoints organized by feature
 export const API = {

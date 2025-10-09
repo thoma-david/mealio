@@ -34,7 +34,6 @@ import {
 } from "../controller/progressController.js";
 
 import authMiddleware from "../middleware/auth.js";
-import { changeMealInPlan } from "../controller/mealPlanController.js";
 
 const authRouter = express.Router();
 

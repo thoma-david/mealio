@@ -15,7 +15,7 @@ import {
   Paper,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { API_URL } from "../api/auth";
+import { API } from "../config/api";
 
 type Ingredient = {
   name: string;
@@ -52,7 +52,7 @@ const FavoritesPage = () => {
     const fetchFavoriteRecipes = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_URL}/favorites`, {
+        const response = await fetch(API.RECIPES.FAVORITES, {
           method: "GET",
           credentials: "include",
         });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "../api/auth";
+import { API } from "../config/api";
 import {
   Box,
   Typography,
@@ -116,7 +116,7 @@ const WeekPage = () => {
   const generateMealPlan = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/generate-mealplan`, {
+      const response = await fetch(API.MEAL_PLAN.GENERATE, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -214,7 +214,7 @@ const WeekPage = () => {
   const fetchLikedRecipes = async () => {
     try {
       console.log("🔍 Fetching liked recipes...");
-      const response = await fetch(`${API_URL}/favorites`, {
+      const response = await fetch(API.RECIPES.FAVORITES, {
         credentials: "include",
       });
 

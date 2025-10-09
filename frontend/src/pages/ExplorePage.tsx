@@ -3,7 +3,7 @@ import { useState } from "react";
 import React from "react";
 import SingleRecipe from "../components/SingleRecipe";
 import { motion, AnimatePresence } from "framer-motion";
-import { API_URL } from "../api/auth";
+import { API } from "../config/api";
 import { Search, Filter, TrendingUp } from "lucide-react";
 import {
   TextField,
@@ -60,7 +60,7 @@ const ExplorePage = () => {
     const fetchRecipes = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_URL}/recipes`, {
+        const response = await fetch(API.RECIPES.BASE, {
           credentials: "include",
         });
         if (!response.ok)
@@ -87,7 +87,7 @@ const ExplorePage = () => {
 
     const fetchLikedRecipes = async () => {
       try {
-        const response = await fetch(`${API_URL}/favorites`, {
+        const response = await fetch(API.RECIPES.FAVORITES, {
           credentials: "include",
         });
         if (response.ok) {
