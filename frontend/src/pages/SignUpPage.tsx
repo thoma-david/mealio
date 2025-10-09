@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { login, signup } from "../api/auth";
 import {
   Box,
   Card,
@@ -21,39 +22,92 @@ import {
   Restaurant as RestaurantIcon,
   Email,
   Lock,
+  Person,
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
-
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "../hooks/useAuth";
-
-const LoginPage = () => {
+const SignupPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const { login } = useAuth(); // ← useAuth Hook
+  const handleInputChange =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+    };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (!formData.firstName.trim()) return "First name is required";
+    if (!formData.lastName.trim()) return "Last name is required";
+    if (!formData.email.trim()) return "Email is required";
+    if (!formData.password) return "Password is required";
+    if (formData.password.length < 6)
+      return "Password must be at least 6 characters";
+    if (formData.password !== formData.confirmPassword)
+      return "Passwords don't match";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email))
+      return "Please enter a valid email address";
+
+    return null;
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setSuccess("");
+
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      setIsLoading(false);
+      return;
+    }
 
     try {
-      const result = await login(email, password); // ← Aus useAuth
+      const data = await signup(
+        formData.firstName,
+        formData.lastName,
+        formData.email,
+        formData.password
+      );
+      console.log(formData);
+      console.log("Signup response:", data);
 
-      if (!result.success) {
-        setError(result.message || "Login failed");
+      if (data.success) {
+        setSuccess("Account created successfully!");
+        // await login(formData.email, formData.password);
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
       } else {
-        console.log("Login successful", result);
-        navigate("/");
+        // Handle specific error messages
+        if (data.error === "User already exists") {
+          setError(
+            "This email address is already registered. Please try logging in instead."
+          );
+        } else {
+          setError(data.error || data.message || "Registration failed");
+        }
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Registration failed:", error);
       setError("Network error. Please try again.");
     } finally {
       setIsLoading(false);
@@ -136,7 +190,7 @@ const LoginPage = () => {
                 fontSize: { xs: "1.5rem", sm: "2rem" },
               }}
             >
-              Welcome Back
+              Create Account
             </Typography>
             <Typography
               variant="body1"
@@ -144,7 +198,7 @@ const LoginPage = () => {
               color="text.secondary"
               sx={{ mb: 4 }}
             >
-              Sign in to continue your culinary journey
+              Join thousands of users planning better meals
             </Typography>
 
             {error && (
@@ -161,14 +215,82 @@ const LoginPage = () => {
               </Alert>
             )}
 
-            <Box component="form" onSubmit={handleLogin}>
+            {success && (
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 3,
+                  borderRadius: 2,
+                  bgcolor: alpha("#4caf50", 0.1),
+                  border: `1px solid ${alpha("#4caf50", 0.2)}`,
+                }}
+              >
+                {success}
+              </Alert>
+            )}
+
+            <Box component="form" onSubmit={handleSignup}>
+              {/* Name Fields */}
+              <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+                <TextField
+                  fullWidth
+                  label="First Name"
+                  value={formData.firstName}
+                  onChange={handleInputChange("firstName")}
+                  required
+                  variant="outlined"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Person sx={{ color: "text.secondary" }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff7043",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff7043",
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ff7043",
+                    },
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  value={formData.lastName}
+                  onChange={handleInputChange("lastName")}
+                  required
+                  variant="outlined"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff7043",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ff7043",
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#ff7043",
+                    },
+                  }}
+                />
+              </Box>
+
               <TextField
                 fullWidth
                 label="Email Address"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                margin="normal"
+                value={formData.email}
+                onChange={handleInputChange("email")}
                 required
                 variant="outlined"
                 InputProps={{
@@ -199,9 +321,8 @@ const LoginPage = () => {
                 fullWidth
                 label="Password"
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                margin="normal"
+                value={formData.password}
+                onChange={handleInputChange("password")}
                 required
                 variant="outlined"
                 InputProps={{
@@ -223,7 +344,7 @@ const LoginPage = () => {
                   ),
                 }}
                 sx={{
-                  mb: 2,
+                  mb: 3,
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 2,
                     "&:hover .MuiOutlinedInput-notchedOutline": {
@@ -239,23 +360,54 @@ const LoginPage = () => {
                 }}
               />
 
-              <Box sx={{ textAlign: "right", mb: 3 }}>
-                <Link
-                  href="#"
-                  variant="body2"
-                  sx={{
-                    color: "#ff7043",
-                    textDecoration: "none",
-                    fontWeight: 500,
-                    "&:hover": {
-                      textDecoration: "underline",
-                      color: "#ff5722",
+              <TextField
+                fullWidth
+                label="Confirm Password"
+                type={showConfirmPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={handleInputChange("confirmPassword")}
+                required
+                variant="outlined"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        edge="end"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        {showConfirmPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  mb: 4,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff7043",
                     },
-                  }}
-                >
-                  Forgot password?
-                </Link>
-              </Box>
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#ff7043",
+                    },
+                  },
+                  "& .MuiInputLabel-root.Mui-focused": {
+                    color: "#ff7043",
+                  },
+                }}
+              />
 
               <Button
                 type="submit"
@@ -281,32 +433,33 @@ const LoginPage = () => {
                 {isLoading ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  "Sign In"
+                  "Create Account"
                 )}
               </Button>
 
               <Divider sx={{ mb: 3 }}>
                 <Typography variant="body2" color="text.secondary">
-                  Or continue with
+                  Or sign up with
                 </Typography>
               </Divider>
 
               <Box sx={{ textAlign: "center", mt: 4 }}>
                 <Typography variant="body1" color="text.secondary">
-                  Don't have an account?{" "}
+                  Already have an account?{" "}
                   <Link
-                    href="/signup"
+                    onClick={() => navigate("/login")}
                     sx={{
                       color: "#ff7043",
                       textDecoration: "none",
                       fontWeight: 600,
+                      cursor: "pointer",
                       "&:hover": {
                         textDecoration: "underline",
                         color: "#ff5722",
                       },
                     }}
                   >
-                    Sign up
+                    Sign in
                   </Link>
                 </Typography>
               </Box>
@@ -318,4 +471,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;
