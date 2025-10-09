@@ -29,9 +29,7 @@ import {
   Explore,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/auth";
+import { API } from "../config/api";
 
 interface WeightStats {
   currentWeight: number;
@@ -82,16 +80,19 @@ const Dashboard = () => {
     setLoading(true);
     try {
       // Load weight stats
-      const weightRes = await fetch(`${API_URL}/weight-entries?period=90days`, {
-        credentials: "include",
-      });
+      const weightRes = await fetch(
+        `${API.PROGRESS.WEIGHT_ENTRIES}?period=90days`,
+        {
+          credentials: "include",
+        }
+      );
       if (weightRes.ok) {
         const data = await weightRes.json();
         setWeightStats(data.data.stats);
       }
 
       // Load insights
-      const insightsRes = await fetch(`${API_URL}/progress-insights`, {
+      const insightsRes = await fetch(API.PROGRESS.INSIGHTS, {
         credentials: "include",
       });
       if (insightsRes.ok) {
@@ -100,7 +101,7 @@ const Dashboard = () => {
       }
 
       // Load suggested recipes (just fetch some recipes for now)
-      const recipesRes = await fetch(`${API_URL}/recipes?limit=6`, {
+      const recipesRes = await fetch(`${API.RECIPES.BASE}?limit=6`, {
         credentials: "include",
       });
       if (recipesRes.ok) {
@@ -109,7 +110,7 @@ const Dashboard = () => {
       }
 
       // Load favorites
-      const favoritesRes = await fetch(`${API_URL}/recipes/favorites`, {
+      const favoritesRes = await fetch(API.RECIPES.FAVORITES, {
         credentials: "include",
       });
       if (favoritesRes.ok) {

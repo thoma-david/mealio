@@ -40,9 +40,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/auth";
+import { API } from "../config/api";
 
 interface WeightEntry {
   _id: string;
@@ -109,7 +107,7 @@ const ProgressPage: React.FC = () => {
     setError(null);
     try {
       const response = await fetch(
-        `${API_URL}/weight-entries?period=${selectedPeriod}`,
+        `${API.PROGRESS.WEIGHT_ENTRIES}?period=${selectedPeriod}`,
         {
           method: "GET",
           credentials: "include",
@@ -133,7 +131,7 @@ const ProgressPage: React.FC = () => {
 
   const loadInsights = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/progress-insights`, {
+      const response = await fetch(API.PROGRESS.INSIGHTS, {
         method: "GET",
         credentials: "include",
       });
@@ -183,7 +181,7 @@ const ProgressPage: React.FC = () => {
         requestBody.bodyFatPercentage = Number(bodyFat);
       }
 
-      const response = await fetch(`${API_URL}/weight-entries`, {
+      const response = await fetch(API.PROGRESS.WEIGHT_ENTRIES, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -214,7 +212,7 @@ const ProgressPage: React.FC = () => {
 
   const handleDeleteEntry = async (id: string) => {
     try {
-      const response = await fetch(`${API_URL}/weight-entries/${id}`, {
+      const response = await fetch(API.PROGRESS.WEIGHT_ENTRY_BY_ID(id), {
         method: "DELETE",
         credentials: "include",
       });

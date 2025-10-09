@@ -64,15 +64,12 @@ export const generateMealPlan = async (req, res) => {
     }
     console.log(`✅ Found ${likedRecipes.length} liked recipes`);
 
-    // Exclude both liked and disliked recipes
-    const excludedRecipeIds = [
-      ...(profile.likes || []),
-      ...(profile.dislikes || []),
-    ];
-    console.log("\n🚫 Excluding recipes:");
-    console.log(`  - Liked: ${profile.likes?.length || 0}`);
+    // Only exclude disliked recipes, NOT liked ones
+    const excludedRecipeIds = [...(profile.dislikes || [])];
+    console.log("\n🚫 Excluding disliked recipes:");
     console.log(`  - Disliked: ${profile.dislikes?.length || 0}`);
     console.log(`  - Total excluded: ${excludedRecipeIds.length}`);
+    console.log(`  - Liked recipes will be INCLUDED: ${likedRecipes.length}`);
 
     // Fetch additional recipes - only names and basic info
     console.log("\n🎲 Fetching additional random recipes...");
@@ -157,7 +154,13 @@ export const generateMealPlan = async (req, res) => {
     ]);
     console.log(`✅ Found ${additionalRecipes.length} additional recipes`);
 
-    const allRecipes = [...likedRecipes, ...additionalRecipes];
+    // Mark liked recipes explicitly for the AI
+    const markedLikedRecipes = likedRecipes.map((recipe) => ({
+      ...recipe,
+      isLikedByUser: true,
+    }));
+
+    const allRecipes = [...markedLikedRecipes, ...additionalRecipes];
     console.log(`\n📚 Total recipes available for AI: ${allRecipes.length}`);
     console.log(`  - Liked: ${likedRecipes.length}`);
     console.log(`  - Random: ${additionalRecipes.length}`);

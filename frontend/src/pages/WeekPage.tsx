@@ -31,7 +31,6 @@ import {
   Restaurant,
   DinnerDining,
   LocalCafe,
-  Settings,
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { motion, AnimatePresence } from "framer-motion";
@@ -181,19 +180,16 @@ const WeekPage = () => {
   // Update user profile with new settings (budget only, not people count)
   const updateProfileSettings = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/update-profile",
-        {
-          method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            budget: weeklyBudget, // Only save budget to profile
-          }),
-        }
-      );
+      const response = await fetch(API.AUTH.UPDATE_PROFILE, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          budget: weeklyBudget, // Only save budget to profile
+        }),
+      });
 
       if (response.ok) {
         console.log("Profile budget updated successfully");
@@ -309,20 +305,6 @@ const WeekPage = () => {
     });
   };
 
-  // Helper function to calculate total cost of all meals
-  const getTotalMealCost = () => {
-    if (!mealPlan?.week) return 0;
-
-    const totalCost = mealPlan.week.reduce((weekTotal, day) => {
-      const dayTotal = day.recipes.reduce((dayTotal, recipe) => {
-        return dayTotal + (recipe.estimated_price || 0);
-      }, 0);
-      return weekTotal + dayTotal;
-    }, 0);
-
-    return Number(totalCost.toFixed(2));
-  };
-
   const variants = {
     closed: {
       y: "100%",
@@ -367,16 +349,6 @@ const WeekPage = () => {
           </Typography>
 
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <IconButton
-              onClick={() => setSettingsOpen(true)}
-              sx={{
-                bgcolor: alpha("#ff7043", 0.1),
-                "&:hover": { bgcolor: alpha("#ff7043", 0.2) },
-              }}
-            >
-              <Settings sx={{ color: "#ff7043" }} />
-            </IconButton>
-
             <Button
               onClick={generateMealPlan}
               disabled={loading}
@@ -394,62 +366,6 @@ const WeekPage = () => {
             </Button>
           </Box>
         </Box>
-
-        {/* Meal Plan Info */}
-        {mealPlan && (
-          <Paper
-            elevation={0}
-            sx={{
-              p: 2,
-              mb: 3,
-              borderRadius: 2,
-              bgcolor: alpha("#ff7043", 0.05),
-              border: `1px solid ${alpha("#ff7043", 0.2)}`,
-            }}
-          >
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  Weekly Budget: <strong>${weeklyBudget.toFixed(2)}</strong>
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  color="text.primary"
-                  sx={{ fontWeight: 600 }}
-                >
-                  Total Meal Cost: <strong>${getTotalMealCost()}</strong>
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color={
-                    getTotalMealCost() <= weeklyBudget
-                      ? "success.main"
-                      : "error.main"
-                  }
-                  sx={{ fontWeight: 500 }}
-                >
-                  {getTotalMealCost() <= weeklyBudget
-                    ? "✓ Within Budget"
-                    : "⚠ Over Budget"}
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        )}
 
         {/* Day Filter Chips */}
         <Box sx={{ display: "flex", gap: 1, overflowX: "auto", pb: 1, mb: 3 }}>
