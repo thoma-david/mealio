@@ -480,3 +480,24 @@ export const changeMealInPlan = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getWeekPlan = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const weekPlanDoc = await WeekPlan.findOne({ user: userId });
+    if (!weekPlanDoc) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No meal plan found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: weekPlanDoc.weekPlan,
+    });
+  } catch (error) {
+    console.error("Get week plan error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
