@@ -1,12 +1,11 @@
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { API, apiFetch } from "../config/api";
 
 export const auth = {
   isUser: async () => {
-    console.log("API_URL is set to:", API_URL);
+    console.log("API_URL is set to:", API.BASE);
     try {
-      const res = await fetch(`${API_URL}/verify`, {
+      const res = await apiFetch(API.AUTH.VERIFY, {
         method: "GET",
-        credentials: "include",
       });
 
       if (!res.ok) return { success: false, hasProfile: false };
@@ -21,10 +20,8 @@ export const auth = {
 };
 
 export const login = async (email: string, password: string) => {
-  const res = await fetch(`${API_URL}/login`, {
+  const res = await apiFetch(API.AUTH.LOGIN, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ email, password }),
   });
 
@@ -40,10 +37,8 @@ export const signup = async (
   const body = { firstName, lastName, email, password };
   console.log("signup payload:", body);
 
-  const res = await fetch(`${API_URL}/signup`, {
+  const res = await apiFetch(API.AUTH.SIGNUP, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify(body),
   });
 
@@ -51,19 +46,16 @@ export const signup = async (
 };
 
 export const logout = async () => {
-  const res = await fetch(`${API_URL}/logout`, {
+  const res = await apiFetch(API.AUTH.LOGOUT, {
     method: "POST",
-    credentials: "include",
   });
 
   return await res.json();
 };
 
 export const createProfile = async (profileData: any) => {
-  const res = await fetch(`${API_URL}/create-profile`, {
+  const res = await apiFetch(API.AUTH.CREATE_PROFILE, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify(profileData),
   });
 

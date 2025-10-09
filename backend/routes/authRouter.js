@@ -16,7 +16,11 @@ import {
   addRecipes,
 } from "../controller/recipesController.js";
 
-import { generateMealPlan } from "../controller/mealPlanController.js";
+import {
+  generateMealPlan,
+  getWeekPlan,
+  changeMealInPlan,
+} from "../controller/mealPlanController.js";
 import {
   addIngredientsBatch,
   getIngredients,
@@ -59,6 +63,7 @@ authRouter.post("/add-recipes", addRecipes);
 
 //AI MEAL PLAN
 authRouter.post("/generate-mealplan", authMiddleware, generateMealPlan);
+authRouter.get("/weekplan", authMiddleware, getWeekPlan);
 authRouter.put("/change-meal", authMiddleware, changeMealInPlan);
 
 //INGREDIENTS
