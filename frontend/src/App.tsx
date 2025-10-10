@@ -11,7 +11,11 @@ import "./App.css";
 import PublicRoute from "./routes/publicRoutes";
 import ProtectedRoute from "./routes/protectedRoutes";
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import QuizWrapper from "./components/QuizWrapper";
 import ProfileRequiredRoute from "./routes/profileRequiredRoutes";
 import Settings from "./pages/Settings";
@@ -90,6 +94,10 @@ function App() {
           <Settings />
         </ProfileRequiredRoute>
       ),
+    },
+    {
+      path: "*",
+      element: <Navigate to="/" replace />,
     },
   ]);
   return (

@@ -43,20 +43,21 @@ export const register = async (req, res) => {
       maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
     });
 
-    console.log("EMAIL_USER:", process.env.EMAIL_USER);
-    console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "****" : "undefined");
-    console.log("SENDER_EMAIL:", process.env.SENDER_EMAIL);
-    console.log("Mailversand an:", user.email);
-
+    // Send welcome email asynchronously (don't block response)
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
-      subject: "Welcome to Our Service",
-      text: `Hello ${user.firstName},Thank you for registering! We're glad to have you on board.Best regards,The Team`,
+      subject: "Welcome to Mealio",
+      text: `Hello ${user.firstName},\n\nThank you for registering! We're glad to have you on board.\n\nBest regards,\nThe Mealio Team`,
     };
 
-    await transporter.sendMail(mailOptions);
+    // Send email in background, log errors but don't fail the registration
+    transporter.sendMail(mailOptions).catch((emailError) => {
+      console.log("Warning: Failed to send welcome email:", emailError.message);
+      // Email failure shouldn't fail the registration
+    });
 
+    // Always return success if user was created and token was set
     res
       .status(201)
       .json({ success: true, message: "User created successfully" });

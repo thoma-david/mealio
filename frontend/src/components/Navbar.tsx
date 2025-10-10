@@ -27,7 +27,7 @@ import {
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { useLocation, useNavigate } from "react-router-dom";
-import { logout } from "../api/auth";
+import { useAuth } from "../hooks/useAuth";
 
 interface HideOnScrollProps {
   children: React.ReactElement;
@@ -46,6 +46,7 @@ function HideOnScroll({ children }: HideOnScrollProps) {
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const profileMenuOpen = Boolean(anchorEl);
 
@@ -63,14 +64,16 @@ const Navbar = () => {
   };
 
   const handleLogoutClick = async () => {
+    handleProfileMenuClose();
     try {
       await logout();
       // Navigate to login page after successful logout
-      navigate("/login");
+      navigate("/login", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
+      // Still navigate to login even if logout fails
+      navigate("/login", { replace: true });
     }
-    handleProfileMenuClose();
   };
 
   const navigationItems = [

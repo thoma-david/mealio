@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { signup } from "../api/auth";
+import { useAuth } from "../hooks/useAuth";
 import {
   Box,
   Card,
@@ -29,6 +30,7 @@ import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { login, checkAuth } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -91,11 +93,25 @@ const SignupPage = () => {
       console.log("Signup response:", data);
 
       if (data.success) {
-        setSuccess("Account created successfully!");
-        // await login(formData.email, formData.password);
-        setTimeout(() => {
-          navigate("/");
-        }, 2000);
+        setSuccess("Account created successfully! Logging you in...");
+
+        // Automatically log the user in after successful registration
+        const loginResult = await login(formData.email, formData.password);
+
+        if (loginResult.success) {
+          // Refresh auth state to get profile status
+          await checkAuth();
+          // Redirect to quiz since new users don't have a profile yet
+          setTimeout(() => {
+            navigate("/quiz", { replace: true });
+          }, 500);
+        } else {
+          // If auto-login fails, redirect to login page
+          setError("Account created but login failed. Please log in manually.");
+          setTimeout(() => {
+            navigate("/login");
+          }, 1500);
+        }
       } else {
         // Handle specific error messages
         if (data.error === "User already exists") {
