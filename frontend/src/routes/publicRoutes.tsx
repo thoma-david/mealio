@@ -5,7 +5,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, hasProfile, loading } = useAuth();
 
   // Loading state while checking authentication
   if (loading) {
@@ -23,12 +23,17 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // If user is authenticated, redirect to dashboard
-  if (isAuthenticated) {
+  // If user is authenticated and has a profile, redirect to dashboard
+  if (isAuthenticated && hasProfile) {
     return <Navigate to="/" replace />;
   }
 
-  // If not authenticated, show the public route (login page)
+  // If user is authenticated but no profile, redirect to quiz
+  if (isAuthenticated && !hasProfile) {
+    return <Navigate to="/quiz" replace />;
+  }
+
+  // If not authenticated, show the public route (login/signup page)
   return <>{children}</>;
 };
 
